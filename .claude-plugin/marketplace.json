@@ -1,0 +1,37 @@
+{
+  "name": "gor-dev-plugins",
+  "owner": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com"
+  },
+  "metadata": {
+    "description": "Android development plugins: Swagger model generation, architecture enforcement, Yandex Tracker integration",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "swagger-android",
+      "description": "Generate Android Kotlin data models from Swagger/OpenAPI specifications",
+      "source": {
+        "source": "github",
+        "repo": "gorban-dev/swagger-model-generator"
+      }
+    },
+    {
+      "name": "android-arch",
+      "description": "Android architecture plugin: create, modify and refactor features with Screen/View/ViewModel, Clean Architecture, Koin/Kodein",
+      "source": {
+        "source": "github",
+        "repo": "gorban-dev/android-arch-plugin"
+      }
+    },
+    {
+      "name": "yandex-tracker",
+      "description": "Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning",
+      "source": {
+        "source": "github",
+        "repo": "gorban-dev/yandex-tracker-mcp-server"
+      }
+    }
+  ]
+}
