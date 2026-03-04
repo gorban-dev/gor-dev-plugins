@@ -1,0 +1,5 @@
+{
+  "name": "android-arch",
+  "version": "1.0.0",
+  "description": "Android architecture plugin: создание, доработка и рефакторинг фич по единым архитектурным правилам (Compose, Screen/View, BaseSharedViewModel, Clean Architecture, Koin/Kodein)"
+}

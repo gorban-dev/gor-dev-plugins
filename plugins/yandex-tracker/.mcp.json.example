@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "yandex-tracker": {
+      "command": "node",
+      "args": [
+        "/Users/home/Project/AI Challenge/yandex-tracker-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "YANDEX_TRACKER_TOKEN": "your_oauth_token_here",
+        "YANDEX_TRACKER_ORG_ID": "your_org_id_here"
+      }
+    }
+  }
+}
