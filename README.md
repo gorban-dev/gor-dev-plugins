@@ -10,11 +10,11 @@
 
 ## Доступные плагины
 
-| Плагин | Описание | Установка |
-|--------|----------|-----------|
-| **swagger-android** | Генерация Kotlin data models из Swagger/OpenAPI | `/plugin install swagger-android@gor-dev-plugins` |
-| **android-arch** | Создание, доработка и рефакторинг фич по архитектурным правилам (Compose, Screen/View, Clean Architecture, Koin/Kodein) | `/plugin install android-arch@gor-dev-plugins` |
-| **yandex-tracker** | Yandex Tracker MCP сервер: задачи, тайм-трекинг, комментарии, спринты | `/plugin install yandex-tracker@gor-dev-plugins` |
+| Плагин | Описание | Репозиторий | Установка |
+|--------|----------|-------------|-----------|
+| **swagger-android** | Генерация Kotlin data models из Swagger/OpenAPI | [gorban-dev/swagger-model-generator](https://github.com/gorban-dev/swagger-model-generator) | `/plugin install swagger-android@gor-dev-plugins` |
+| **android-arch** | Создание, доработка и рефакторинг фич по архитектурным правилам (Compose, Screen/View, Clean Architecture, Koin/Kodein) | [gorban-dev/android-arch-plugin](https://github.com/gorban-dev/android-arch-plugin) | `/plugin install android-arch@gor-dev-plugins` |
+| **yandex-tracker** | Yandex Tracker MCP сервер: задачи, тайм-трекинг, комментарии, спринты | [gorban-dev/yandex-tracker-mcp-server](https://github.com/gorban-dev/yandex-tracker-mcp-server) | `/plugin install yandex-tracker@gor-dev-plugins` |
 
 ## Добавление в проект
 
