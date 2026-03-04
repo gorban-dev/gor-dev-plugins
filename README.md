@@ -1,24 +1,24 @@
 # gor-dev-plugins
 
-Маркетплейс Claude Code плагинов для Android-разработки.
+Claude Code plugin marketplace for Android development.
 
-## Установка маркетплейса
+## Installation
 
 ```bash
 /plugin marketplace add gorban-dev/gor-dev-plugins
 ```
 
-## Доступные плагины
+## Available Plugins
 
-| Плагин | Описание | Репозиторий | Установка |
-|--------|----------|-------------|-----------|
-| **swagger-android** | Генерация Kotlin data models из Swagger/OpenAPI | [gorban-dev/swagger-model-generator](https://github.com/gorban-dev/swagger-model-generator) | `/plugin install swagger-android@gor-dev-plugins` |
-| **android-arch** | Создание, доработка и рефакторинг фич по архитектурным правилам (Compose, Screen/View, Clean Architecture, Koin/Kodein) | [gorban-dev/android-arch-plugin](https://github.com/gorban-dev/android-arch-plugin) | `/plugin install android-arch@gor-dev-plugins` |
-| **yandex-tracker** | Yandex Tracker MCP сервер: задачи, тайм-трекинг, комментарии, спринты | [gorban-dev/yandex-tracker-mcp-server](https://github.com/gorban-dev/yandex-tracker-mcp-server) | `/plugin install yandex-tracker@gor-dev-plugins` |
+| Plugin | Description | Repository | Install |
+|--------|-------------|------------|---------|
+| **swagger-android** | Generate Android Kotlin data models from Swagger/OpenAPI specs | [gorban-dev/swagger-model-generator](https://github.com/gorban-dev/swagger-model-generator) | `/plugin install swagger-android@gor-dev-plugins` |
+| **android-arch** | Create, modify and refactor Android features following strict architecture rules (Compose, Screen/View, Clean Architecture, Koin/Kodein) | [gorban-dev/android-arch-plugin](https://github.com/gorban-dev/android-arch-plugin) | `/plugin install android-arch@gor-dev-plugins` |
+| **yandex-tracker** | Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning | [gorban-dev/yandex-tracker-mcp-server](https://github.com/gorban-dev/yandex-tracker-mcp-server) | `/plugin install yandex-tracker@gor-dev-plugins` |
 
-## Добавление в проект
+## Project Setup
 
-Добавьте в `.claude/settings.json` вашего проекта:
+Add to your project's `.claude/settings.json`:
 
 ```json
 {
