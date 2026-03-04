@@ -12,6 +12,12 @@
  *   node get-swagger-models.js --model=ProductDto
  *   node get-swagger-models.js --all
  *   node get-swagger-models.js --url="https://login:pass@host/path" --endpoints="GET /orders"
+ *   node get-swagger-models.js --refresh --endpoints="GET /orders"   (force re-fetch)
+ *
+ * Caching:
+ *   The script caches the full Swagger spec in .claude/swagger/spec.json.
+ *   Cached spec is reused if less than 24 hours old.
+ *   Use --refresh to force a fresh fetch from the server.
  */
 
 'use strict';
@@ -651,31 +657,68 @@ function buildAllModels(spec) {
 }
 
 // ---------------------------------------------------------------------------
+// Spec caching — stores full spec in .claude/swagger/spec.json with TTL
+// ---------------------------------------------------------------------------
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+function findCacheDir() {
+  // Search for .claude/ directory in CWD, parent, grandparent
+  const dirs = [
+    process.cwd(),
+    path.resolve(process.cwd(), '..'),
+    path.resolve(process.cwd(), '..', '..'),
+  ];
+  for (const dir of dirs) {
+    const claudeDir = path.join(dir, '.claude');
+    if (fs.existsSync(claudeDir)) {
+      return path.join(claudeDir, 'swagger');
+    }
+  }
+  // Default: create in CWD
+  return path.join(process.cwd(), '.claude', 'swagger');
+}
+
+function getCachedSpec(cacheDir) {
+  const specPath = path.join(cacheDir, 'spec.json');
+  if (!fs.existsSync(specPath)) return null;
+
+  const stat = fs.statSync(specPath);
+  const ageMs = Date.now() - stat.mtimeMs;
+
+  if (ageMs > CACHE_TTL_MS) {
+    process.stderr.write(`Cache expired (${Math.round(ageMs / 3600000)}h old). Will re-fetch.\n`);
+    return null;
+  }
+
+  try {
+    const data = fs.readFileSync(specPath, 'utf8');
+    const spec = JSON.parse(data);
+    const ageHours = Math.round(ageMs / 3600000);
+    process.stderr.write(`Using cached spec (${ageHours}h old): ${specPath}\n`);
+    return spec;
+  } catch (e) {
+    process.stderr.write(`Cache corrupted, will re-fetch: ${e.message}\n`);
+    return null;
+  }
+}
+
+function saveSpecToCache(cacheDir, spec) {
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+    const specPath = path.join(cacheDir, 'spec.json');
+    fs.writeFileSync(specPath, JSON.stringify(spec), 'utf8');
+    process.stderr.write(`Spec cached: ${specPath}\n`);
+  } catch (e) {
+    process.stderr.write(`Warning: could not cache spec: ${e.message}\n`);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
   const envFile = loadEnv();
   const args = parseArgs(process.argv);
-
-  // Determine Swagger URL
-  let swaggerUrl = args.url || process.env.SWAGGER_URL;
-
-  if (!swaggerUrl) {
-    const searchedDirs = [
-      process.cwd(),
-      path.resolve(process.cwd(), '..'),
-      path.resolve(process.cwd(), '..', '..'),
-    ];
-    process.stderr.write(
-      '\nError: SWAGGER_URL is not configured.\n\n' +
-      'Please create a .env file in your Android project root with:\n\n' +
-      '  SWAGGER_URL=https://login:password@your-host.example.com/swagger-json-path\n\n' +
-      'The script searches for .env in:\n' +
-      searchedDirs.map(d => `  - ${d}`).join('\n') + '\n\n' +
-      'Alternatively, pass --url="https://..." as a command-line argument.\n'
-    );
-    process.exit(1);
-  }
 
   // Validate mode
   const hasMode = args.list !== undefined || args.endpoints !== undefined ||
@@ -688,19 +731,52 @@ async function main() {
       '  node get-swagger-models.js --endpoints="GET /products,POST /cart"\n' +
       '  node get-swagger-models.js --model=ProductDto\n' +
       '  node get-swagger-models.js --all\n' +
-      '  node get-swagger-models.js --url="https://..." --endpoints="..."\n'
+      '  node get-swagger-models.js --url="https://..." --endpoints="..."\n' +
+      '  node get-swagger-models.js --refresh --endpoints="..."  (force re-fetch)\n'
     );
     process.exit(1);
   }
 
-  // Fetch spec
-  let spec;
-  try {
-    process.stderr.write(`Fetching Swagger spec from ${swaggerUrl.replace(/:\/\/[^@]+@/, '://***@')}...\n`);
-    spec = await fetchUrl(swaggerUrl);
-  } catch (err) {
-    process.stderr.write(`\nError fetching Swagger spec: ${err.message}\n`);
-    process.exit(1);
+  // Determine Swagger URL
+  let swaggerUrl = args.url || process.env.SWAGGER_URL;
+
+  // Load spec: try cache first, then fetch
+  const forceRefresh = args.refresh !== undefined;
+  const cacheDir = findCacheDir();
+  let spec = null;
+
+  if (!forceRefresh) {
+    spec = getCachedSpec(cacheDir);
+  }
+
+  if (!spec) {
+    if (!swaggerUrl) {
+      const searchedDirs = [
+        process.cwd(),
+        path.resolve(process.cwd(), '..'),
+        path.resolve(process.cwd(), '..', '..'),
+      ];
+      process.stderr.write(
+        '\nError: SWAGGER_URL is not configured and no cached spec found.\n\n' +
+        'Please create a .env file in your Android project root with:\n\n' +
+        '  SWAGGER_URL=https://login:password@your-host.example.com/swagger-json-path\n\n' +
+        'The script searches for .env in:\n' +
+        searchedDirs.map(d => `  - ${d}`).join('\n') + '\n\n' +
+        'Alternatively, pass --url="https://..." as a command-line argument.\n'
+      );
+      process.exit(1);
+    }
+
+    try {
+      process.stderr.write(`Fetching Swagger spec from ${swaggerUrl.replace(/:\/\/[^@]+@/, '://***@')}...\n`);
+      spec = await fetchUrl(swaggerUrl);
+    } catch (err) {
+      process.stderr.write(`\nError fetching Swagger spec: ${err.message}\n`);
+      process.exit(1);
+    }
+
+    // Cache the fetched spec
+    saveSpecToCache(cacheDir, spec);
   }
 
   // Validate it looks like a swagger/openapi spec

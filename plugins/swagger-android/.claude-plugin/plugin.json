@@ -1,6 +1,6 @@
 {
   "name": "swagger-android",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Generate Android Kotlin data models from Swagger/OpenAPI specifications",
   "license": "MIT",
   "keywords": ["android", "kotlin", "swagger", "openapi", "models", "codegen", "kotlinx-serialization"]

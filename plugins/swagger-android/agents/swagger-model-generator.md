@@ -60,10 +60,10 @@ Read the skill file at `$CLAUDE_PLUGIN_ROOT/skills/swagger-kotlin-conventions/SK
 
 1. Parse the user's request to extract feature name and endpoint list
 2. Locate the Android project structure and determine base package
-3. Verify .env configuration exists with SWAGGER_URL
-4. Run the script to get pre-processed, Kotlin-typed model data
-5. Check for file conflicts before writing
-6. Generate all required Kotlin files following the exact conventions in the skill
+3. Run the script to get pre-processed, Kotlin-typed model data (script handles caching + .env)
+4. Check for file conflicts before writing
+5. Generate all required Kotlin files following the exact conventions in the skill
+6. If something looks wrong — re-read cached spec at `.claude/swagger/spec.json` to verify
 7. Report all created files with full paths
 
 ---
@@ -95,29 +95,19 @@ Determine:
 If either cannot be determined automatically — ask the user:
 > "I couldn't find the applicationId automatically. What is the base package for your app (e.g., `com.company.app`)?"
 
-### Step 3: Verify .env Configuration
+### Step 3: Run the Script
 
-Check if `.env` exists in the project root (or parent directories):
-```bash
-ls -la .env 2>/dev/null || ls -la ../.env 2>/dev/null || echo "NOT FOUND"
-```
-
-If `.env` is missing:
-```
-.env not found. Please create it in your Android project root:
-
-  SWAGGER_URL=https://login:password@your-host.example.com/swagger-json-path
-
-See .env.example for reference.
-```
-Then stop and wait for the user to configure it.
-
-### Step 4: Run the Script
+The script automatically caches the full Swagger spec in `.claude/swagger/spec.json` (TTL: 24 hours). On first run it fetches from the server; subsequent runs reuse the cache. Use `--refresh` to force a re-fetch.
 
 Run the script and **check the exit code**. If the script fails (exit code != 0) — STOP, show the error from stderr to the user, and do NOT proceed to code generation.
 
 ```bash
 node "$CLAUDE_PLUGIN_ROOT/scripts/get-swagger-models.js" --endpoints="GET /api/products,GET /api/products/{id}" 2>&1
+```
+
+If the user reports stale data, re-run with `--refresh`:
+```bash
+node "$CLAUDE_PLUGIN_ROOT/scripts/get-swagger-models.js" --refresh --endpoints="GET /api/products" 2>&1
 ```
 
 **If the command fails or stderr contains "Error":**
@@ -133,7 +123,7 @@ node "$CLAUDE_PLUGIN_ROOT/scripts/get-swagger-models.js" --endpoints="GET /api/p
 - Ask the user to verify the endpoint paths
 - STOP. Do NOT generate any code.
 
-### Step 5: Check for Conflicts
+### Step 4: Check for Conflicts
 
 Before writing any file, check if it already exists:
 ```bash
@@ -149,7 +139,7 @@ If any files exist — ask the user:
 
 Never silently overwrite existing files.
 
-### Step 6: Generate Files
+### Step 5: Generate Files
 
 For each model from the script output, generate files based on `kind`:
 
@@ -178,7 +168,7 @@ package com.company.app.feature.catalog.data.model
 package com.company.app.feature.catalog.domain.model
 ```
 
-### Step 7: Apply Kotlin Generation Rules
+### Step 6: Apply Kotlin Generation Rules
 
 Follow ALL conventions from `skills/swagger-kotlin-conventions/SKILL.md`. Key rules:
 
@@ -236,7 +226,7 @@ fun KtorEnumName.toDomain(): EnumName = when (this) {
 }
 ```
 
-### Step 8: Report
+### Step 7: Report
 
 After all files are written, display a summary:
 
@@ -280,6 +270,14 @@ Total: 9 files
 **Missing .env / SWAGGER_URL:** Stop immediately and show clear setup instructions. Do not attempt to run the script without a URL.
 
 **Script returns empty models array:** Verify the endpoints match — run `--list` mode to show available endpoints and ask the user to confirm the correct paths.
+
+**Verification via cached spec:** If the generated models look suspicious or you need to double-check field types, read the raw cached spec directly:
+```bash
+cat .claude/swagger/spec.json | node -e "const s=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(JSON.stringify(s.components?.schemas?.['ModelName'] || s.definitions?.['ModelName'], null, 2))"
+```
+This lets you verify the script output against the original Swagger data without re-fetching.
+
+**Stale cache:** If the user says the spec has changed, re-run with `--refresh` to force a fresh fetch.
 
 ---
 
