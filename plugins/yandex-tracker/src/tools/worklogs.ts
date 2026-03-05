@@ -1,85 +1,149 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { YandexTrackerClient } from "../services/tracker-client.js";
-import { AddWorklogSchema, GetWorklogsSchema } from "../schemas/index.js";
-import { formatWorklogsAsMarkdown } from "../formatters.js";
+import type { TrackerClient } from "../client.js";
 
-export function registerWorklogTools(server: McpServer, client: YandexTrackerClient): void {
+interface User { display?: string }
+interface Worklog {
+  id?: string;
+  duration: string;
+  start: string;
+  createdAt: string;
+  createdBy?: User;
+  comment?: string;
+}
+
+function formatWorklogs(worklogs: Worklog[]): string {
+  if (!worklogs.length) return "No worklog entries found.";
+  let md = `# Worklog Entries (${worklogs.length})\n\n`;
+  for (const log of worklogs) {
+    md += `## ${log.createdBy?.display ?? "Unknown"}\n`;
+    md += `**Duration:** ${log.duration}\n`;
+    md += `**Start:** ${log.start}\n`;
+    md += `**Created:** ${log.createdAt}\n`;
+    if (log.comment) md += `**Comment:** ${log.comment}\n`;
+    md += `\n`;
+  }
+  return md;
+}
+
+const GetWorklogsSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  response_format: z.enum(["json", "markdown"]).default("markdown").describe("Output format"),
+}).strict();
+
+const AddWorklogSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  duration: z.string().describe("Duration in ISO 8601 (e.g., 'PT2H', 'PT30M', 'P1D')"),
+  start: z.string().optional().describe("Start time in ISO 8601 (default: now)"),
+  comment: z.string().optional().describe("Work description"),
+}).strict();
+
+const UpdateWorklogSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  worklog_id: z.string().describe("Worklog ID"),
+  duration: z.string().optional().describe("New duration in ISO 8601"),
+  start: z.string().optional().describe("New start time"),
+  comment: z.string().optional().describe("New comment"),
+}).strict();
+
+const DeleteWorklogSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  worklog_id: z.string().describe("Worklog ID"),
+}).strict();
+
+export function registerWorklogTools(server: McpServer, client: TrackerClient): void {
+  server.registerTool(
+    "yandex_tracker_get_worklogs",
+    {
+      title: "Get Worklogs",
+      description: `Get all time tracking records for an issue.
+
+Args:
+  - issue_key (string, required): Issue key
+  - response_format: "json" or "markdown"
+
+Returns: Worklog entries with duration, start time, author, comments.`,
+      inputSchema: GetWorklogsSchema,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async (args: z.infer<typeof GetWorklogsSchema>) => {
+      const worklogs = await client.request<Worklog[]>(`/issues/${args.issue_key}/worklog`);
+      const text = args.response_format === "json"
+        ? JSON.stringify(worklogs, null, 2)
+        : formatWorklogs(worklogs);
+      return { content: [{ type: "text" as const, text }] };
+    },
+  );
 
   server.registerTool(
     "yandex_tracker_add_worklog",
     {
-      title: "Add Worklog to Issue",
-      description: `Add a time tracking record (worklog) to an issue.
+      title: "Add Worklog",
+      description: `Add a time tracking record to an issue.
 
 Args:
-  - issue_key (string, required): Issue key (e.g., "MYQUEUE-123")
-  - duration (string, required): Time spent in ISO 8601 — "PT2H" (2 hours), "PT30M" (30 min), "P1D" (1 business day = 8h)
+  - issue_key (string, required): Issue key
+  - duration (string, required): ISO 8601 duration — "PT2H" (2h), "PT30M" (30m), "P1D" (8h business day)
   - start (string): Start time in ISO 8601 (default: now)
-  - comment (string): Description of work done
-
-Returns:
-  Confirmation with duration, start time, and comment.
+  - comment (string): Work description
 
 Examples:
-  - "Log 3 hours on PROJ-123" -> issue_key="PROJ-123", duration="PT3H"
-  - "Log half day with comment" -> duration="PT4H", comment="Code review"
-
-Error Handling:
-  - 404: Issue not found.
-  - 400: Invalid duration format. Use ISO 8601 (PT{hours}H{minutes}M).`,
+  - "Log 3 hours on PROJ-123" -> duration="PT3H"
+  - "Log half day" -> duration="PT4H", comment="Code review"`,
       inputSchema: AddWorklogSchema,
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: true,
-      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args: z.infer<typeof AddWorklogSchema>) => {
-      const { issue_key, ...worklogData } = args;
-      const worklog = await client.addWorklog(issue_key, worklogData);
-      return {
-        content: [{
-          type: "text" as const,
-          text: `Worklog added to ${issue_key}\n\nDuration: ${worklog.duration}\nStart: ${worklog.start}${worklog.comment ? `\nComment: ${worklog.comment}` : ""}`,
-        }],
-      };
-    }
+      const body: Record<string, unknown> = { duration: args.duration };
+      if (args.start) body.start = args.start;
+      if (args.comment) body.comment = args.comment;
+      const worklog = await client.request<Worklog>(`/issues/${args.issue_key}/worklog`, { method: "POST", body: JSON.stringify(body) });
+      return { content: [{ type: "text" as const, text: `Worklog added to ${args.issue_key}\n\nDuration: ${worklog.duration}\nStart: ${worklog.start}${worklog.comment ? `\nComment: ${worklog.comment}` : ""}` }] };
+    },
   );
 
   server.registerTool(
-    "yandex_tracker_get_worklogs",
+    "yandex_tracker_update_worklog",
     {
-      title: "Get Issue Worklogs",
-      description: `Get all time tracking records (worklogs) for an issue.
+      title: "Update Worklog",
+      description: `Update an existing worklog entry.
 
 Args:
-  - issue_key (string, required): Issue key (e.g., "MYQUEUE-123")
-  - response_format ("json"|"markdown", default: "markdown"): Output format
+  - issue_key (string, required): Issue key
+  - worklog_id (string, required): Worklog ID
+  - duration, start, comment — optional new values
 
-Returns:
-  List of worklog entries with duration, start time, author, and comments.
-
-Examples:
-  - "Show time logs for PROJ-456" -> issue_key="PROJ-456"
-
-Error Handling:
-  - 404: Issue not found.`,
-      inputSchema: GetWorklogsSchema,
-      annotations: {
-        readOnlyHint: true,
-        destructiveHint: false,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
+Returns: Updated worklog.`,
+      inputSchema: UpdateWorklogSchema,
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetWorklogsSchema>) => {
-      const worklogs = await client.getWorklogs(args.issue_key);
-      if (args.response_format === "json") {
-        return { content: [{ type: "text" as const, text: JSON.stringify(worklogs, null, 2) }] };
-      }
-      return { content: [{ type: "text" as const, text: formatWorklogsAsMarkdown(worklogs) }] };
-    }
+    async (args: z.infer<typeof UpdateWorklogSchema>) => {
+      const body: Record<string, unknown> = {};
+      if (args.duration) body.duration = args.duration;
+      if (args.start) body.start = args.start;
+      if (args.comment) body.comment = args.comment;
+      const worklog = await client.request<Worklog>(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "PATCH", body: JSON.stringify(body) });
+      return { content: [{ type: "text" as const, text: `Worklog ${args.worklog_id} updated on ${args.issue_key}\nDuration: ${worklog.duration}` }] };
+    },
+  );
+
+  server.registerTool(
+    "yandex_tracker_delete_worklog",
+    {
+      title: "Delete Worklog",
+      description: `Delete a worklog entry from an issue.
+
+Args:
+  - issue_key (string, required): Issue key
+  - worklog_id (string, required): Worklog ID
+
+Returns: Confirmation.`,
+      inputSchema: DeleteWorklogSchema,
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+    },
+    async (args: z.infer<typeof DeleteWorklogSchema>) => {
+      await client.request<null>(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "DELETE" });
+      return { content: [{ type: "text" as const, text: `Worklog ${args.worklog_id} deleted from ${args.issue_key}` }] };
+    },
   );
 }

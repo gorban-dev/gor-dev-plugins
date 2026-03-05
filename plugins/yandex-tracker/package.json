@@ -1,7 +1,7 @@
 {
   "name": "@gor-dev/yandex-tracker-mcp",
-  "version": "1.2.1",
-  "description": "MCP server for Yandex Tracker API integration",
+  "version": "1.0.0",
+  "description": "MCP server for Yandex Tracker API — full coverage with 30+ tools",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -9,10 +9,9 @@
   },
   "files": [
     "dist",
-    "skill",
     "skills",
+    "agents",
     ".claude-plugin",
-    ".mcp.json",
     "README.md",
     "LICENSE"
   ],
@@ -38,12 +37,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gorban-dev/yandex-tracker-mcp-server.git"
+    "url": "git+https://github.com/gorban-dev/gor-dev-plugins.git"
   },
-  "bugs": {
-    "url": "https://github.com/gorban-dev/yandex-tracker-mcp-server/issues"
-  },
-  "homepage": "https://github.com/gorban-dev/yandex-tracker-mcp-server#readme",
   "engines": {
     "node": ">=18.0.0"
   },

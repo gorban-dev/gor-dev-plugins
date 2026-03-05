@@ -21,7 +21,7 @@
     },
     {
       "name": "yandex-tracker",
-      "description": "Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning",
+      "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent for task execution, workflow skills",
       "source": "./plugins/yandex-tracker"
     }
   ]

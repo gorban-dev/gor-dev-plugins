@@ -1,17 +1,14 @@
 {
   "name": "yandex-tracker",
-  "description": "Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning",
-  "version": "1.2.1",
-  "author": {
-    "name": "Sergey Gorban",
-    "email": "gorban.dev@gmail.com"
-  },
-  "homepage": "https://github.com/gorban-dev/yandex-tracker-mcp-server",
+  "version": "1.0.0",
+  "description": "Yandex Tracker integration: 30+ MCP tools for full API coverage, agent for interactive task execution, skills for workflow patterns",
+  "license": "MIT",
   "keywords": [
     "yandex-tracker",
     "issue-tracking",
     "project-management",
     "sprint-planning",
-    "time-tracking"
+    "time-tracking",
+    "mcp"
   ]
 }

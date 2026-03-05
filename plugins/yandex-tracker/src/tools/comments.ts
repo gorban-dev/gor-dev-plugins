@@ -1,86 +1,138 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { YandexTrackerClient } from "../services/tracker-client.js";
-import { GetCommentsSchema, AddCommentSchema } from "../schemas/index.js";
-import { formatCommentsAsMarkdown } from "../formatters.js";
+import type { TrackerClient } from "../client.js";
 
-export function registerCommentTools(server: McpServer, client: YandexTrackerClient): void {
+interface User { display?: string; login?: string }
+interface Comment {
+  id?: number;
+  text?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: User;
+}
 
+function formatComments(comments: Comment[]): string {
+  if (!comments.length) return "No comments found.";
+  let md = `# Comments (${comments.length})\n\n`;
+  for (const c of comments) {
+    md += `## ${c.createdBy?.display ?? "Unknown"} — ${c.createdAt ?? "N/A"}\n\n`;
+    md += `${c.text ?? ""}\n\n`;
+    if (c.updatedAt && c.updatedAt !== c.createdAt) md += `*Edited: ${c.updatedAt}*\n\n`;
+    md += `---\n\n`;
+  }
+  return md;
+}
+
+const GetCommentsSchema = z.object({
+  issue_key: z.string().describe("Issue key (e.g., MYQUEUE-123)"),
+  expand: z.string().optional().describe("Extra fields (e.g., 'attachments,reactions')"),
+  response_format: z.enum(["json", "markdown"]).default("markdown").describe("Output format"),
+}).strict();
+
+const AddCommentSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  text: z.string().min(1).describe("Comment text"),
+  summonees: z.array(z.string()).optional().describe("Logins to mention/summon"),
+}).strict();
+
+const UpdateCommentSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  comment_id: z.number().describe("Comment ID"),
+  text: z.string().min(1).describe("New comment text"),
+}).strict();
+
+const DeleteCommentSchema = z.object({
+  issue_key: z.string().describe("Issue key"),
+  comment_id: z.number().describe("Comment ID"),
+}).strict();
+
+export function registerCommentTools(server: McpServer, client: TrackerClient): void {
   server.registerTool(
     "yandex_tracker_get_comments",
     {
-      title: "Get Issue Comments",
-      description: `Get all comments for a specific issue.
+      title: "Get Comments",
+      description: `Get all comments for an issue.
 
 Args:
-  - issue_key (string, required): Issue key (e.g., "MYQUEUE-123")
-  - expand (string): Extra fields to include (e.g., "attachments,reactions")
-  - response_format ("json"|"markdown", default: "markdown"): Output format
+  - issue_key (string, required): Issue key
+  - expand (string): Extra fields (e.g., "attachments,reactions")
+  - response_format: "json" or "markdown"
 
-Returns:
-  List of comments with author, text, creation date, and edit timestamps.
-
-Examples:
-  - "Show comments on PROJ-123" -> issue_key="PROJ-123"
-  - "Get comments with attachments" -> issue_key="PROJ-123", expand="attachments"
-
-Error Handling:
-  - 404: Issue not found.`,
+Returns: List of comments with author, text, timestamps.`,
       inputSchema: GetCommentsSchema,
-      annotations: {
-        readOnlyHint: true,
-        destructiveHint: false,
-        idempotentHint: true,
-        openWorldHint: true,
-      },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
     async (args: z.infer<typeof GetCommentsSchema>) => {
-      const comments = await client.getComments(args.issue_key, args.expand);
-      if (args.response_format === "json") {
-        return { content: [{ type: "text" as const, text: JSON.stringify(comments, null, 2) }] };
-      }
-      return { content: [{ type: "text" as const, text: formatCommentsAsMarkdown(comments) }] };
-    }
+      const qp = args.expand ? `?expand=${encodeURIComponent(args.expand)}` : "";
+      const comments = await client.request<Comment[]>(`/issues/${args.issue_key}/comments${qp}`);
+      const text = args.response_format === "json"
+        ? JSON.stringify(comments, null, 2)
+        : formatComments(comments);
+      return { content: [{ type: "text" as const, text }] };
+    },
   );
 
   server.registerTool(
     "yandex_tracker_add_comment",
     {
-      title: "Add Comment to Issue",
-      description: `Add a comment to an issue, optionally mentioning/summoning users.
+      title: "Add Comment",
+      description: `Add a comment to an issue, optionally mentioning users.
 
 Args:
-  - issue_key (string, required): Issue key (e.g., "MYQUEUE-123")
+  - issue_key (string, required): Issue key
   - text (string, required): Comment text
-  - summonees (string[]): Logins of users to mention — they will receive a notification
+  - summonees (string[]): Logins to mention
 
-Returns:
-  Created comment with author, text, and timestamp.
-
-Examples:
-  - "Comment on PROJ-123" -> issue_key="PROJ-123", text="Fixed in commit abc123"
-  - "Mention john on PROJ-456" -> issue_key="PROJ-456", text="Please review", summonees=["john"]
-
-Error Handling:
-  - 404: Issue not found.
-  - 400: Empty comment text.`,
+Returns: Created comment with author and timestamp.`,
       inputSchema: AddCommentSchema,
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: false,
-        idempotentHint: false,
-        openWorldHint: true,
-      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
     async (args: z.infer<typeof AddCommentSchema>) => {
-      const { issue_key, ...commentData } = args;
-      const comment = await client.addComment(issue_key, commentData);
-      return {
-        content: [{
-          type: "text" as const,
-          text: `Comment added to ${issue_key}\n\nBy: ${comment.createdBy?.display ?? "Unknown"}\nText: ${comment.text ?? ""}`,
-        }],
-      };
-    }
+      const body: Record<string, unknown> = { text: args.text };
+      if (args.summonees) body.summonees = args.summonees;
+      const comment = await client.request<Comment>(`/issues/${args.issue_key}/comments`, { method: "POST", body: JSON.stringify(body) });
+      return { content: [{ type: "text" as const, text: `Comment added to ${args.issue_key}\n\nBy: ${comment.createdBy?.display ?? "Unknown"}\nText: ${comment.text ?? ""}` }] };
+    },
+  );
+
+  server.registerTool(
+    "yandex_tracker_update_comment",
+    {
+      title: "Update Comment",
+      description: `Update an existing comment on an issue.
+
+Args:
+  - issue_key (string, required): Issue key
+  - comment_id (number, required): Comment ID
+  - text (string, required): New comment text
+
+Returns: Updated comment.`,
+      inputSchema: UpdateCommentSchema,
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+    },
+    async (args: z.infer<typeof UpdateCommentSchema>) => {
+      const comment = await client.request<Comment>(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "PATCH", body: JSON.stringify({ text: args.text }) });
+      return { content: [{ type: "text" as const, text: `Comment ${args.comment_id} updated on ${args.issue_key}\n\nText: ${comment.text ?? ""}` }] };
+    },
+  );
+
+  server.registerTool(
+    "yandex_tracker_delete_comment",
+    {
+      title: "Delete Comment",
+      description: `Delete a comment from an issue.
+
+Args:
+  - issue_key (string, required): Issue key
+  - comment_id (number, required): Comment ID
+
+Returns: Confirmation.`,
+      inputSchema: DeleteCommentSchema,
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+    },
+    async (args: z.infer<typeof DeleteCommentSchema>) => {
+      await client.request<null>(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "DELETE" });
+      return { content: [{ type: "text" as const, text: `Comment ${args.comment_id} deleted from ${args.issue_key}` }] };
+    },
   );
 }
