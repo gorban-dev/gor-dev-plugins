@@ -115,30 +115,27 @@ Interactive agent for task execution with user confirmation at each step.
 - Use `yc iam create-token`
 - Find Cloud Org ID in Yandex Cloud console
 
-### 2. Configure .mcp.json
+### 2. Set environment variables
 
-```json
-{
-  "mcpServers": {
-    "yandex-tracker": {
-      "command": "node",
-      "args": ["path/to/dist/index.js"],
-      "env": {
-        "YANDEX_TRACKER_TOKEN": "your_token",
-        "YANDEX_TRACKER_ORG_ID": "your_org_id"
-      }
-    }
-  }
-}
-```
+The MCP server reads credentials from environment variables. Add them to your `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
 
-### 3. Build
-
+**Option A: OAuth Token**
 ```bash
-cd plugins/yandex-tracker
-npm install
-npm run build
+export YANDEX_TRACKER_TOKEN="y0_your_oauth_token"
+export YANDEX_TRACKER_ORG_ID="your_org_id"
 ```
+
+**Option B: IAM Token**
+```bash
+export YANDEX_TRACKER_IAM_TOKEN="your_iam_token"
+export YANDEX_TRACKER_CLOUD_ORG_ID="your_cloud_org_id"
+```
+
+After adding, restart your terminal or run `source ~/.zshrc`, then launch Claude Code from the same terminal.
+
+### 3. Install plugin
+
+Install as a Claude Code plugin — the bundled MCP server (`dist/bundle.js`) is included and works immediately, no `npm install` required.
 
 ## License
 
