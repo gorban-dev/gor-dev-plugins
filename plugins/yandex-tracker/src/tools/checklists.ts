@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface ChecklistItem {
   id?: string;
@@ -21,12 +21,6 @@ function formatChecklist(items: ChecklistItem[]): string {
     md += `\n`;
   }
   return md;
-}
-
-// The Yandex Tracker checklist API returns the full issue with a checklist field
-interface IssueWithChecklist {
-  key: string;
-  checklistItems?: ChecklistItem[];
 }
 
 const GetChecklistSchema = z.object({
@@ -71,14 +65,14 @@ Returns: Checklist items with text, checked state, assignee, deadline.`,
       inputSchema: GetChecklistSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetChecklistSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetChecklistSchema>) => {
       const items = await client.request<ChecklistItem[]>(`/issues/${args.issue_key}/checklistItems`);
       const safeItems = Array.isArray(items) ? items : [];
       const text = args.response_format === "json"
         ? JSON.stringify(safeItems, null, 2)
         : formatChecklist(safeItems);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -98,14 +92,14 @@ Returns: Confirmation.`,
       inputSchema: AddChecklistItemSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof AddChecklistItemSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof AddChecklistItemSchema>) => {
       const body: Record<string, unknown> = { text: args.text };
       if (args.checked !== undefined) body.checked = args.checked;
       if (args.deadline) body.deadline = args.deadline;
       if (args.assignee) body.assignee = args.assignee;
       await client.request<unknown>(`/issues/${args.issue_key}/checklistItems`, { method: "POST", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Checklist item added to ${args.issue_key}: "${args.text}"` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -123,7 +117,7 @@ Returns: Confirmation.`,
       inputSchema: UpdateChecklistItemSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof UpdateChecklistItemSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof UpdateChecklistItemSchema>) => {
       const body: Record<string, unknown> = {};
       if (args.text) body.text = args.text;
       if (args.checked !== undefined) body.checked = args.checked;
@@ -131,7 +125,7 @@ Returns: Confirmation.`,
       if (args.assignee) body.assignee = args.assignee;
       await client.request<unknown>(`/issues/${args.issue_key}/checklistItems/${args.item_id}`, { method: "PATCH", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Checklist item ${args.item_id} updated on ${args.issue_key}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -148,9 +142,9 @@ Returns: Confirmation.`,
       inputSchema: DeleteChecklistItemSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof DeleteChecklistItemSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof DeleteChecklistItemSchema>) => {
       await client.request<null>(`/issues/${args.issue_key}/checklistItems/${args.item_id}`, { method: "DELETE" });
       return { content: [{ type: "text" as const, text: `Checklist item ${args.item_id} deleted from ${args.issue_key}` }] };
-    },
+    }),
   );
 }

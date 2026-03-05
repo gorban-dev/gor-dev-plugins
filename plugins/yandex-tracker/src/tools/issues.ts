@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 const CHARACTER_LIMIT = 25000;
 
@@ -136,13 +136,13 @@ Examples:
       inputSchema: GetIssueSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetIssueSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetIssueSchema>) => {
       const issue = await client.request<Issue>(`/issues/${args.issue_key}`);
       const text = args.response_format === "json"
         ? JSON.stringify(issue, null, 2)
         : formatIssue(issue);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -164,7 +164,7 @@ Examples:
       inputSchema: CreateIssueSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof CreateIssueSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof CreateIssueSchema>) => {
       const body: Record<string, unknown> = { queue: args.queue, summary: args.summary };
       if (args.description) body.description = args.description;
       if (args.type) body.type = { key: args.type };
@@ -176,7 +176,7 @@ Examples:
       if (args.sprint) body.sprint = [{ id: args.sprint }];
       const issue = await client.request<Issue>("/issues", { method: "POST", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Issue ${issue.key} created\n\n${formatIssue(issue)}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -197,7 +197,7 @@ Examples:
       inputSchema: UpdateIssueSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof UpdateIssueSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof UpdateIssueSchema>) => {
       const { issue_key, ...updates } = args;
       const body: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(updates)) {
@@ -210,7 +210,7 @@ Examples:
       }
       const issue = await client.request<Issue>(`/issues/${issue_key}`, { method: "PATCH", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Issue ${issue_key} updated\n\n${formatIssue(issue)}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -233,7 +233,7 @@ Examples:
       inputSchema: SearchIssuesSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof SearchIssuesSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof SearchIssuesSchema>) => {
       const body: Record<string, unknown> = {};
       if (args.query) body.query = args.query;
       if (args.filter) body.filter = args.filter;
@@ -248,6 +248,6 @@ Examples:
         return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
       }
       return { content: [{ type: "text" as const, text: formatSearchResults(safeIssues, args.offset ?? 0, perPage) }] };
-    },
+    }),
   );
 }

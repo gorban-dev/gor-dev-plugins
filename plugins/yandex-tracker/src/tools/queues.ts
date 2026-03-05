@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface DisplayField { key?: string; display?: string }
 interface Queue {
@@ -64,13 +64,13 @@ Returns: Queue info with name, description, lead, default settings.`,
       inputSchema: GetQueueSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetQueueSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetQueueSchema>) => {
       const queue = await client.request<Queue>(`/queues/${args.queue_key}`);
       const text = args.response_format === "json"
         ? JSON.stringify(queue, null, 2)
         : formatQueue(queue);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -86,12 +86,12 @@ Returns: Table of queues with key, name, lead.`,
       inputSchema: ListQueuesSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof ListQueuesSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof ListQueuesSchema>) => {
       const queues = await client.request<Queue[]>("/queues");
       const text = args.response_format === "json"
         ? JSON.stringify(queues, null, 2)
         : formatQueues(Array.isArray(queues) ? queues : []);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 }

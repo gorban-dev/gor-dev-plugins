@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface DisplayField { key?: string; display?: string; id?: string }
 interface IssueLink {
@@ -58,13 +58,13 @@ Returns: List of linked issues with relationship type, direction, key, summary, 
       inputSchema: GetLinksSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetLinksSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetLinksSchema>) => {
       const links = await client.request<IssueLink[]>(`/issues/${args.issue_key}/links`);
       const text = args.response_format === "json"
         ? JSON.stringify(links, null, 2)
         : formatLinks(links);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -84,13 +84,13 @@ Examples:
       inputSchema: CreateLinkSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof CreateLinkSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof CreateLinkSchema>) => {
       await client.request<unknown>(`/issues/${args.issue_key}/links`, {
         method: "POST",
         body: JSON.stringify({ relationship: args.relationship, issue: args.issue }),
       });
       return { content: [{ type: "text" as const, text: `Link created: ${args.issue_key} --[${args.relationship}]--> ${args.issue}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -107,9 +107,9 @@ Returns: Confirmation.`,
       inputSchema: DeleteLinkSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof DeleteLinkSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof DeleteLinkSchema>) => {
       await client.request<null>(`/issues/${args.issue_key}/links/${args.link_id}`, { method: "DELETE" });
       return { content: [{ type: "text" as const, text: `Link ${args.link_id} deleted from ${args.issue_key}` }] };
-    },
+    }),
   );
 }

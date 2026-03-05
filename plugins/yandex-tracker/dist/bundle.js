@@ -20987,6 +20987,22 @@ var StdioServerTransport = class {
 
 // dist/client.js
 var API_BASE_URL = "https://api.tracker.yandex.net/v2";
+function handleApiError(error2) {
+  const message = error2 instanceof Error ? error2.message : String(error2);
+  return {
+    isError: true,
+    content: [{ type: "text", text: `Error: ${message}` }]
+  };
+}
+function withErrorHandling(fn) {
+  return async (...args) => {
+    try {
+      return await fn(...args);
+    } catch (error2) {
+      return handleApiError(error2);
+    }
+  };
+}
 var TrackerClient = class {
   authHeader;
   orgIdHeaderName;
@@ -21195,11 +21211,11 @@ Examples:
   - "Get PROJ-123 as JSON" -> issue_key="PROJ-123", response_format="json"`,
     inputSchema: GetIssueSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const issue2 = await client2.request(`/issues/${args.issue_key}`);
     const text = args.response_format === "json" ? JSON.stringify(issue2, null, 2) : formatIssue(issue2);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_create_issue", {
     title: "Create Issue",
     description: `Create a new issue in Yandex Tracker.
@@ -21216,7 +21232,7 @@ Examples:
   - "Create subtask for PROJ-100" -> queue="PROJ", summary="...", parent="PROJ-100"`,
     inputSchema: CreateIssueSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = { queue: args.queue, summary: args.summary };
     if (args.description)
       body.description = args.description;
@@ -21238,7 +21254,7 @@ Examples:
     return { content: [{ type: "text", text: `Issue ${issue2.key} created
 
 ${formatIssue(issue2)}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_update_issue", {
     title: "Update Issue",
     description: `Update fields of an existing issue. Only specified fields are changed.
@@ -21254,7 +21270,7 @@ Examples:
   - "Assign to john" -> issue_key="PROJ-123", assignee="john"`,
     inputSchema: UpdateIssueSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const { issue_key, ...updates } = args;
     const body = {};
     for (const [key, value] of Object.entries(updates)) {
@@ -21270,7 +21286,7 @@ Examples:
     return { content: [{ type: "text", text: `Issue ${issue_key} updated
 
 ${formatIssue(issue2)}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_search_issues", {
     title: "Search Issues",
     description: `Search for issues using Yandex Tracker query language or filter objects.
@@ -21288,7 +21304,7 @@ Examples:
   - "My tasks" -> query="Assignee: me() AND Status: !closed"`,
     inputSchema: SearchIssuesSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = {};
     if (args.query)
       body.query = args.query;
@@ -21306,7 +21322,7 @@ Examples:
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
     return { content: [{ type: "text", text: formatSearchResults(safeIssues, args.offset ?? 0, perPage) }] };
-  });
+  }));
 }
 
 // dist/tools/comments.js
@@ -21365,12 +21381,12 @@ Args:
 Returns: List of comments with author, text, timestamps.`,
     inputSchema: GetCommentsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const qp = args.expand ? `?expand=${encodeURIComponent(args.expand)}` : "";
     const comments = await client2.request(`/issues/${args.issue_key}/comments${qp}`);
     const text = args.response_format === "json" ? JSON.stringify(comments, null, 2) : formatComments(comments);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_add_comment", {
     title: "Add Comment",
     description: `Add a comment to an issue, optionally mentioning users.
@@ -21383,7 +21399,7 @@ Args:
 Returns: Created comment with author and timestamp.`,
     inputSchema: AddCommentSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = { text: args.text };
     if (args.summonees)
       body.summonees = args.summonees;
@@ -21392,7 +21408,7 @@ Returns: Created comment with author and timestamp.`,
 
 By: ${comment.createdBy?.display ?? "Unknown"}
 Text: ${comment.text ?? ""}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_update_comment", {
     title: "Update Comment",
     description: `Update an existing comment on an issue.
@@ -21405,12 +21421,12 @@ Args:
 Returns: Updated comment.`,
     inputSchema: UpdateCommentSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const comment = await client2.request(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "PATCH", body: JSON.stringify({ text: args.text }) });
     return { content: [{ type: "text", text: `Comment ${args.comment_id} updated on ${args.issue_key}
 
 Text: ${comment.text ?? ""}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_delete_comment", {
     title: "Delete Comment",
     description: `Delete a comment from an issue.
@@ -21422,10 +21438,10 @@ Args:
 Returns: Confirmation.`,
     inputSchema: DeleteCommentSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     await client2.request(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "DELETE" });
     return { content: [{ type: "text", text: `Comment ${args.comment_id} deleted from ${args.issue_key}` }] };
-  });
+  }));
 }
 
 // dist/tools/worklogs.js
@@ -21485,11 +21501,11 @@ Args:
 Returns: Worklog entries with duration, start time, author, comments.`,
     inputSchema: GetWorklogsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const worklogs = await client2.request(`/issues/${args.issue_key}/worklog`);
     const text = args.response_format === "json" ? JSON.stringify(worklogs, null, 2) : formatWorklogs(worklogs);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_add_worklog", {
     title: "Add Worklog",
     description: `Add a time tracking record to an issue.
@@ -21505,7 +21521,7 @@ Examples:
   - "Log half day" -> duration="PT4H", comment="Code review"`,
     inputSchema: AddWorklogSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = { duration: args.duration };
     if (args.start)
       body.start = args.start;
@@ -21517,7 +21533,7 @@ Examples:
 Duration: ${worklog.duration}
 Start: ${worklog.start}${worklog.comment ? `
 Comment: ${worklog.comment}` : ""}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_update_worklog", {
     title: "Update Worklog",
     description: `Update an existing worklog entry.
@@ -21530,7 +21546,7 @@ Args:
 Returns: Updated worklog.`,
     inputSchema: UpdateWorklogSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = {};
     if (args.duration)
       body.duration = args.duration;
@@ -21541,7 +21557,7 @@ Returns: Updated worklog.`,
     const worklog = await client2.request(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "PATCH", body: JSON.stringify(body) });
     return { content: [{ type: "text", text: `Worklog ${args.worklog_id} updated on ${args.issue_key}
 Duration: ${worklog.duration}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_delete_worklog", {
     title: "Delete Worklog",
     description: `Delete a worklog entry from an issue.
@@ -21553,10 +21569,10 @@ Args:
 Returns: Confirmation.`,
     inputSchema: DeleteWorklogSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     await client2.request(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "DELETE" });
     return { content: [{ type: "text", text: `Worklog ${args.worklog_id} deleted from ${args.issue_key}` }] };
-  });
+  }));
 }
 
 // dist/tools/transitions.js
@@ -21600,11 +21616,11 @@ Args:
 Returns: Table of transitions with ID, display name, target status. Use the ID with transition_issue.`,
     inputSchema: GetTransitionsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const transitions = await client2.request(`/issues/${args.issue_key}/transitions`);
     const text = args.response_format === "json" ? JSON.stringify(transitions, null, 2) : formatTransitions(transitions);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_transition_issue", {
     title: "Execute Transition",
     description: `Execute a status transition on an issue. First call get_transitions to find valid IDs.
@@ -21619,14 +21635,14 @@ Examples:
   - "Close PROJ-456" -> transition_id="close", comment="Done"`,
     inputSchema: TransitionIssueSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = {};
     if (args.comment)
       body.comment = args.comment;
     await client2.request(`/issues/${args.issue_key}/transitions/${args.transition_id}/_execute`, { method: "POST", body: JSON.stringify(body) });
     return { content: [{ type: "text", text: `Transition '${args.transition_id}' executed on ${args.issue_key}${args.comment ? `
 Comment: ${args.comment}` : ""}` }] };
-  });
+  }));
 }
 
 // dist/tools/links.js
@@ -21676,11 +21692,11 @@ Args:
 Returns: List of linked issues with relationship type, direction, key, summary, status.`,
     inputSchema: GetLinksSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const links = await client2.request(`/issues/${args.issue_key}/links`);
     const text = args.response_format === "json" ? JSON.stringify(links, null, 2) : formatLinks(links);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_create_link", {
     title: "Create Issue Link",
     description: `Create a link between two issues.
@@ -21695,13 +21711,13 @@ Examples:
   - "Mark PROJ-456 as duplicate" -> relationship="duplicates", issue="PROJ-123"`,
     inputSchema: CreateLinkSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     await client2.request(`/issues/${args.issue_key}/links`, {
       method: "POST",
       body: JSON.stringify({ relationship: args.relationship, issue: args.issue })
     });
     return { content: [{ type: "text", text: `Link created: ${args.issue_key} --[${args.relationship}]--> ${args.issue}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_delete_link", {
     title: "Delete Issue Link",
     description: `Delete a link from an issue.
@@ -21713,10 +21729,10 @@ Args:
 Returns: Confirmation.`,
     inputSchema: DeleteLinkSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     await client2.request(`/issues/${args.issue_key}/links/${args.link_id}`, { method: "DELETE" });
     return { content: [{ type: "text", text: `Link ${args.link_id} deleted from ${args.issue_key}` }] };
-  });
+  }));
 }
 
 // dist/tools/checklists.js
@@ -21773,12 +21789,12 @@ Args:
 Returns: Checklist items with text, checked state, assignee, deadline.`,
     inputSchema: GetChecklistSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const items = await client2.request(`/issues/${args.issue_key}/checklistItems`);
     const safeItems = Array.isArray(items) ? items : [];
     const text = args.response_format === "json" ? JSON.stringify(safeItems, null, 2) : formatChecklist(safeItems);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_add_checklist_item", {
     title: "Add Checklist Item",
     description: `Add an item to issue's checklist.
@@ -21793,7 +21809,7 @@ Args:
 Returns: Confirmation.`,
     inputSchema: AddChecklistItemSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = { text: args.text };
     if (args.checked !== void 0)
       body.checked = args.checked;
@@ -21803,7 +21819,7 @@ Returns: Confirmation.`,
       body.assignee = args.assignee;
     await client2.request(`/issues/${args.issue_key}/checklistItems`, { method: "POST", body: JSON.stringify(body) });
     return { content: [{ type: "text", text: `Checklist item added to ${args.issue_key}: "${args.text}"` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_update_checklist_item", {
     title: "Update Checklist Item",
     description: `Update a checklist item (text, checked state, deadline, assignee).
@@ -21816,7 +21832,7 @@ Args:
 Returns: Confirmation.`,
     inputSchema: UpdateChecklistItemSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const body = {};
     if (args.text)
       body.text = args.text;
@@ -21828,7 +21844,7 @@ Returns: Confirmation.`,
       body.assignee = args.assignee;
     await client2.request(`/issues/${args.issue_key}/checklistItems/${args.item_id}`, { method: "PATCH", body: JSON.stringify(body) });
     return { content: [{ type: "text", text: `Checklist item ${args.item_id} updated on ${args.issue_key}` }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_delete_checklist_item", {
     title: "Delete Checklist Item",
     description: `Delete a checklist item from an issue.
@@ -21840,10 +21856,10 @@ Args:
 Returns: Confirmation.`,
     inputSchema: DeleteChecklistItemSchema,
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     await client2.request(`/issues/${args.issue_key}/checklistItems/${args.item_id}`, { method: "DELETE" });
     return { content: [{ type: "text", text: `Checklist item ${args.item_id} deleted from ${args.issue_key}` }] };
-  });
+  }));
 }
 
 // dist/tools/queues.js
@@ -21911,11 +21927,11 @@ Args:
 Returns: Queue info with name, description, lead, default settings.`,
     inputSchema: GetQueueSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const queue = await client2.request(`/queues/${args.queue_key}`);
     const text = args.response_format === "json" ? JSON.stringify(queue, null, 2) : formatQueue(queue);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_list_queues", {
     title: "List Queues",
     description: `List all available queues.
@@ -21926,11 +21942,11 @@ Args:
 Returns: Table of queues with key, name, lead.`,
     inputSchema: ListQueuesSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const queues = await client2.request("/queues");
     const text = args.response_format === "json" ? JSON.stringify(queues, null, 2) : formatQueues(Array.isArray(queues) ? queues : []);
     return { content: [{ type: "text", text }] };
-  });
+  }));
 }
 
 // dist/tools/sprints.js
@@ -22011,11 +22027,11 @@ Args:
 Returns: Sprint info with name, status, start/end dates, board.`,
     inputSchema: GetSprintSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const sprint = await client2.request(`/sprints/${args.sprint_id}`);
     const text = args.response_format === "json" ? JSON.stringify(sprint, null, 2) : formatSprint(sprint);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_list_sprints", {
     title: "List Sprints",
     description: `List all sprints for a board.
@@ -22027,11 +22043,11 @@ Args:
 Returns: Table of sprints with ID, name, status, dates.`,
     inputSchema: ListSprintsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const sprints = await client2.request(`/boards/${args.board_id}/sprints`);
     const text = args.response_format === "json" ? JSON.stringify(sprints, null, 2) : formatSprints(Array.isArray(sprints) ? sprints : []);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_get_sprint_issues", {
     title: "Get Sprint Issues",
     description: `Get all issues in a specific sprint.
@@ -22044,11 +22060,11 @@ Args:
 Returns: List of issues with key, summary, status, priority, assignee.`,
     inputSchema: GetSprintIssuesSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const issues = await client2.request(`/boards/${args.board_id}/sprints/${args.sprint_id}/issues`);
     const text = args.response_format === "json" ? JSON.stringify(issues, null, 2) : formatSprintIssues(Array.isArray(issues) ? issues : []);
     return { content: [{ type: "text", text }] };
-  });
+  }));
 }
 
 // dist/tools/boards.js
@@ -22119,11 +22135,11 @@ Args:
 Returns: Board info with name, columns, and status mappings.`,
     inputSchema: GetBoardSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const board = await client2.request(`/boards/${args.board_id}`);
     const text = args.response_format === "json" ? JSON.stringify(board, null, 2) : formatBoard(board);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_list_boards", {
     title: "List Boards",
     description: `List all available boards.
@@ -22134,11 +22150,11 @@ Args:
 Returns: Table of boards with ID, name, description.`,
     inputSchema: ListBoardsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const boards = await client2.request("/boards");
     const text = args.response_format === "json" ? JSON.stringify(boards, null, 2) : formatBoards(Array.isArray(boards) ? boards : []);
     return { content: [{ type: "text", text }] };
-  });
+  }));
 }
 
 // dist/tools/users.js
@@ -22156,7 +22172,7 @@ Args:
 Returns: User info with login, display name, email.`,
     inputSchema: GetMyselfSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const user = await client2.request("/myself");
     if (args.response_format === "json") {
       return { content: [{ type: "text", text: JSON.stringify(user, null, 2) }] };
@@ -22175,7 +22191,7 @@ Returns: User info with login, display name, email.`,
       md += `**UID:** ${user.uid}
 `;
     return { content: [{ type: "text", text: md }] };
-  });
+  }));
 }
 
 // dist/tools/attachments.js
@@ -22219,11 +22235,11 @@ Args:
 Returns: Table of attachments with name, size, type, uploader, date.`,
     inputSchema: ListAttachmentsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const attachments = await client2.request(`/issues/${args.issue_key}/attachments`);
     const text = args.response_format === "json" ? JSON.stringify(attachments, null, 2) : formatAttachments(Array.isArray(attachments) ? attachments : []);
     return { content: [{ type: "text", text }] };
-  });
+  }));
   server2.registerTool("yandex_tracker_upload_attachment", {
     title: "Upload Attachment",
     description: `Upload a file as an attachment to an issue.
@@ -22236,7 +22252,7 @@ Args:
 Returns: Confirmation with attachment details.`,
     inputSchema: UploadAttachmentSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
-  }, async (args) => {
+  }, withErrorHandling(async (args) => {
     const fileData = await readFile(args.file_path);
     const name = args.filename ?? basename(args.file_path);
     const qp = new URLSearchParams({ filename: name });
@@ -22246,7 +22262,7 @@ Returns: Confirmation with attachment details.`,
 
 Name: ${result.name ?? name}
 Size: ${result.size ?? fileData.length} bytes` }] };
-  });
+  }));
 }
 
 // dist/index.js

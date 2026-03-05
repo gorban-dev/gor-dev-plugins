@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface User { display?: string; login?: string }
 interface Comment {
@@ -62,14 +62,14 @@ Returns: List of comments with author, text, timestamps.`,
       inputSchema: GetCommentsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetCommentsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetCommentsSchema>) => {
       const qp = args.expand ? `?expand=${encodeURIComponent(args.expand)}` : "";
       const comments = await client.request<Comment[]>(`/issues/${args.issue_key}/comments${qp}`);
       const text = args.response_format === "json"
         ? JSON.stringify(comments, null, 2)
         : formatComments(comments);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -87,12 +87,12 @@ Returns: Created comment with author and timestamp.`,
       inputSchema: AddCommentSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof AddCommentSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof AddCommentSchema>) => {
       const body: Record<string, unknown> = { text: args.text };
       if (args.summonees) body.summonees = args.summonees;
       const comment = await client.request<Comment>(`/issues/${args.issue_key}/comments`, { method: "POST", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Comment added to ${args.issue_key}\n\nBy: ${comment.createdBy?.display ?? "Unknown"}\nText: ${comment.text ?? ""}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -110,10 +110,10 @@ Returns: Updated comment.`,
       inputSchema: UpdateCommentSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof UpdateCommentSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof UpdateCommentSchema>) => {
       const comment = await client.request<Comment>(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "PATCH", body: JSON.stringify({ text: args.text }) });
       return { content: [{ type: "text" as const, text: `Comment ${args.comment_id} updated on ${args.issue_key}\n\nText: ${comment.text ?? ""}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -130,9 +130,9 @@ Returns: Confirmation.`,
       inputSchema: DeleteCommentSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof DeleteCommentSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof DeleteCommentSchema>) => {
       await client.request<null>(`/issues/${args.issue_key}/comments/${args.comment_id}`, { method: "DELETE" });
       return { content: [{ type: "text" as const, text: `Comment ${args.comment_id} deleted from ${args.issue_key}` }] };
-    },
+    }),
   );
 }

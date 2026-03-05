@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface UserInfo {
   uid?: string;
@@ -28,7 +28,7 @@ Returns: User info with login, display name, email.`,
       inputSchema: GetMyselfSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetMyselfSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetMyselfSchema>) => {
       const user = await client.request<UserInfo>("/myself");
       if (args.response_format === "json") {
         return { content: [{ type: "text" as const, text: JSON.stringify(user, null, 2) }] };
@@ -39,6 +39,6 @@ Returns: User info with login, display name, email.`,
       if (user.email) md += `**Email:** ${user.email}\n`;
       if (user.uid) md += `**UID:** ${user.uid}\n`;
       return { content: [{ type: "text" as const, text: md }] };
-    },
+    }),
   );
 }

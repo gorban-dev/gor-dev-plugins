@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 
@@ -51,13 +51,13 @@ Returns: Table of attachments with name, size, type, uploader, date.`,
       inputSchema: ListAttachmentsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof ListAttachmentsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof ListAttachmentsSchema>) => {
       const attachments = await client.request<Attachment[]>(`/issues/${args.issue_key}/attachments`);
       const text = args.response_format === "json"
         ? JSON.stringify(attachments, null, 2)
         : formatAttachments(Array.isArray(attachments) ? attachments : []);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -75,7 +75,7 @@ Returns: Confirmation with attachment details.`,
       inputSchema: UploadAttachmentSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof UploadAttachmentSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof UploadAttachmentSchema>) => {
       const fileData = await readFile(args.file_path);
       const name = args.filename ?? basename(args.file_path);
       const qp = new URLSearchParams({ filename: name });
@@ -86,6 +86,6 @@ Returns: Confirmation with attachment details.`,
       );
       const result = (await response.json()) as Attachment;
       return { content: [{ type: "text" as const, text: `Attachment uploaded to ${args.issue_key}\n\nName: ${result.name ?? name}\nSize: ${result.size ?? fileData.length} bytes` }] };
-    },
+    }),
   );
 }

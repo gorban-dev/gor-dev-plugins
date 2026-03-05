@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface User { display?: string }
 interface Worklog {
@@ -66,13 +66,13 @@ Returns: Worklog entries with duration, start time, author, comments.`,
       inputSchema: GetWorklogsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetWorklogsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetWorklogsSchema>) => {
       const worklogs = await client.request<Worklog[]>(`/issues/${args.issue_key}/worklog`);
       const text = args.response_format === "json"
         ? JSON.stringify(worklogs, null, 2)
         : formatWorklogs(worklogs);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -93,13 +93,13 @@ Examples:
       inputSchema: AddWorklogSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof AddWorklogSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof AddWorklogSchema>) => {
       const body: Record<string, unknown> = { duration: args.duration };
       if (args.start) body.start = args.start;
       if (args.comment) body.comment = args.comment;
       const worklog = await client.request<Worklog>(`/issues/${args.issue_key}/worklog`, { method: "POST", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Worklog added to ${args.issue_key}\n\nDuration: ${worklog.duration}\nStart: ${worklog.start}${worklog.comment ? `\nComment: ${worklog.comment}` : ""}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -117,14 +117,14 @@ Returns: Updated worklog.`,
       inputSchema: UpdateWorklogSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof UpdateWorklogSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof UpdateWorklogSchema>) => {
       const body: Record<string, unknown> = {};
       if (args.duration) body.duration = args.duration;
       if (args.start) body.start = args.start;
       if (args.comment) body.comment = args.comment;
       const worklog = await client.request<Worklog>(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "PATCH", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Worklog ${args.worklog_id} updated on ${args.issue_key}\nDuration: ${worklog.duration}` }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -141,9 +141,9 @@ Returns: Confirmation.`,
       inputSchema: DeleteWorklogSchema,
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof DeleteWorklogSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof DeleteWorklogSchema>) => {
       await client.request<null>(`/issues/${args.issue_key}/worklog/${args.worklog_id}`, { method: "DELETE" });
       return { content: [{ type: "text" as const, text: `Worklog ${args.worklog_id} deleted from ${args.issue_key}` }] };
-    },
+    }),
   );
 }

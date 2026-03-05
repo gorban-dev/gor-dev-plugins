@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface Sprint {
   id?: number;
@@ -84,13 +84,13 @@ Returns: Sprint info with name, status, start/end dates, board.`,
       inputSchema: GetSprintSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetSprintSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetSprintSchema>) => {
       const sprint = await client.request<Sprint>(`/sprints/${args.sprint_id}`);
       const text = args.response_format === "json"
         ? JSON.stringify(sprint, null, 2)
         : formatSprint(sprint);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -107,13 +107,13 @@ Returns: Table of sprints with ID, name, status, dates.`,
       inputSchema: ListSprintsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof ListSprintsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof ListSprintsSchema>) => {
       const sprints = await client.request<Sprint[]>(`/boards/${args.board_id}/sprints`);
       const text = args.response_format === "json"
         ? JSON.stringify(sprints, null, 2)
         : formatSprints(Array.isArray(sprints) ? sprints : []);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -131,12 +131,12 @@ Returns: List of issues with key, summary, status, priority, assignee.`,
       inputSchema: GetSprintIssuesSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetSprintIssuesSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetSprintIssuesSchema>) => {
       const issues = await client.request<Issue[]>(`/boards/${args.board_id}/sprints/${args.sprint_id}/issues`);
       const text = args.response_format === "json"
         ? JSON.stringify(issues, null, 2)
         : formatSprintIssues(Array.isArray(issues) ? issues : []);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 }

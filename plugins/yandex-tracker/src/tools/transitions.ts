@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface DisplayField { key?: string; display?: string }
 interface Transition { id: string; display?: string; to?: DisplayField }
@@ -43,13 +43,13 @@ Returns: Table of transitions with ID, display name, target status. Use the ID w
       inputSchema: GetTransitionsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetTransitionsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetTransitionsSchema>) => {
       const transitions = await client.request<Transition[]>(`/issues/${args.issue_key}/transitions`);
       const text = args.response_format === "json"
         ? JSON.stringify(transitions, null, 2)
         : formatTransitions(transitions);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -69,11 +69,11 @@ Examples:
       inputSchema: TransitionIssueSchema,
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async (args: z.infer<typeof TransitionIssueSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof TransitionIssueSchema>) => {
       const body: Record<string, unknown> = {};
       if (args.comment) body.comment = args.comment;
       await client.request<unknown>(`/issues/${args.issue_key}/transitions/${args.transition_id}/_execute`, { method: "POST", body: JSON.stringify(body) });
       return { content: [{ type: "text" as const, text: `Transition '${args.transition_id}' executed on ${args.issue_key}${args.comment ? `\nComment: ${args.comment}` : ""}` }] };
-    },
+    }),
   );
 }

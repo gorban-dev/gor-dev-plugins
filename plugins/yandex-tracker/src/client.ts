@@ -7,6 +7,28 @@ interface ClientConfig {
   cloudOrgId?: string;
 }
 
+type ToolResult = { content: Array<{ type: "text"; text: string }>; isError?: boolean };
+
+export function handleApiError(error: unknown): ToolResult {
+  const message = error instanceof Error ? error.message : String(error);
+  return {
+    isError: true,
+    content: [{ type: "text" as const, text: `Error: ${message}` }],
+  };
+}
+
+export function withErrorHandling<T extends unknown[]>(
+  fn: (...args: T) => Promise<ToolResult>,
+): (...args: T) => Promise<ToolResult> {
+  return async (...args: T) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      return handleApiError(error);
+    }
+  };
+}
+
 export class TrackerClient {
   private readonly authHeader: string;
   private readonly orgIdHeaderName: string;

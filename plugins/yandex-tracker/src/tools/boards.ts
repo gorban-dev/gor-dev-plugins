@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { TrackerClient } from "../client.js";
+import { type TrackerClient, withErrorHandling } from "../client.js";
 
 interface Board {
   id?: number;
@@ -65,13 +65,13 @@ Returns: Board info with name, columns, and status mappings.`,
       inputSchema: GetBoardSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof GetBoardSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof GetBoardSchema>) => {
       const board = await client.request<Board>(`/boards/${args.board_id}`);
       const text = args.response_format === "json"
         ? JSON.stringify(board, null, 2)
         : formatBoard(board);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -87,12 +87,12 @@ Returns: Table of boards with ID, name, description.`,
       inputSchema: ListBoardsSchema,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-    async (args: z.infer<typeof ListBoardsSchema>) => {
+    withErrorHandling(async (args: z.infer<typeof ListBoardsSchema>) => {
       const boards = await client.request<Board[]>("/boards");
       const text = args.response_format === "json"
         ? JSON.stringify(boards, null, 2)
         : formatBoards(Array.isArray(boards) ? boards : []);
       return { content: [{ type: "text" as const, text }] };
-    },
+    }),
   );
 }
