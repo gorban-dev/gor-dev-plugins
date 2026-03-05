@@ -1,0 +1,14 @@
+{
+  "yandex-tracker": {
+    "command": "node",
+    "args": [
+      "${CLAUDE_PLUGIN_ROOT}/dist/index.js"
+    ],
+    "env": {
+      "YANDEX_TRACKER_TOKEN": "${YANDEX_TRACKER_TOKEN}",
+      "YANDEX_TRACKER_ORG_ID": "${YANDEX_TRACKER_ORG_ID}",
+      "YANDEX_TRACKER_IAM_TOKEN": "${YANDEX_TRACKER_IAM_TOKEN}",
+      "YANDEX_TRACKER_CLOUD_ORG_ID": "${YANDEX_TRACKER_CLOUD_ORG_ID}"
+    }
+  }
+}
