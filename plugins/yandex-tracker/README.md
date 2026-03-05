@@ -117,21 +117,49 @@ Interactive agent for task execution with user confirmation at each step.
 
 ### 2. Set environment variables
 
-The MCP server reads credentials from environment variables. Add them to your `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+The MCP server reads credentials from environment variables. You need one of two pairs:
 
-**Option A: OAuth Token**
+| Variable | Description |
+|----------|-------------|
+| `YANDEX_TRACKER_TOKEN` | OAuth token (Yandex 360) |
+| `YANDEX_TRACKER_ORG_ID` | Organization ID (Yandex 360) |
+| `YANDEX_TRACKER_IAM_TOKEN` | IAM token (Yandex Cloud, alternative) |
+| `YANDEX_TRACKER_CLOUD_ORG_ID` | Cloud Org ID (Yandex Cloud, alternative) |
+
+#### macOS / Linux
+
+Add to `~/.zshrc` (macOS) or `~/.bashrc` (Linux):
+
 ```bash
 export YANDEX_TRACKER_TOKEN="y0_your_oauth_token"
 export YANDEX_TRACKER_ORG_ID="your_org_id"
 ```
 
-**Option B: IAM Token**
-```bash
-export YANDEX_TRACKER_IAM_TOKEN="your_iam_token"
-export YANDEX_TRACKER_CLOUD_ORG_ID="your_cloud_org_id"
+Then restart terminal or run `source ~/.zshrc`, and launch Claude Code from the same terminal.
+
+#### Windows
+
+**Option A: PowerShell profile** (recommended)
+
+Add to your PowerShell profile (`$PROFILE`, usually `~\Documents\PowerShell\Microsoft.PowerShell_profile.ps1`):
+
+```powershell
+$env:YANDEX_TRACKER_TOKEN = "y0_your_oauth_token"
+$env:YANDEX_TRACKER_ORG_ID = "your_org_id"
 ```
 
-After adding, restart your terminal or run `source ~/.zshrc`, then launch Claude Code from the same terminal.
+Then restart PowerShell and launch Claude Code from it.
+
+**Option B: System environment variables** (persistent, all apps)
+
+```powershell
+[Environment]::SetEnvironmentVariable("YANDEX_TRACKER_TOKEN", "y0_your_oauth_token", "User")
+[Environment]::SetEnvironmentVariable("YANDEX_TRACKER_ORG_ID", "your_org_id", "User")
+```
+
+Or set via **Settings → System → About → Advanced system settings → Environment Variables**.
+
+After setting system variables, restart Claude Code (or log out and back in).
 
 ### 3. Install plugin
 
