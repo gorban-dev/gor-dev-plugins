@@ -10,6 +10,10 @@ import com.company.app.feature.example.presentation.viewmodel.ExampleViewModel
 fun ExampleScreen(
     viewModel: ExampleViewModel // получение через DI проекта
 ) {
-    val viewState by viewModel.viewStates().collectAsState()
-    ExampleView(viewState, viewModel::obtainEvent)
+    val viewState by viewModel.viewStates().collectAsStateWithLifecycle()
+    val viewAction by viewModel.viewActions().collectAsStateWithLifecycle(null)
+
+    ExampleView(viewState) { event ->
+	viewModel.obtainEvent(event)
+     }
 }

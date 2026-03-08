@@ -39,10 +39,10 @@
 
 ### Если ViewModel не наследует BaseSharedViewModel:
 
-1. Замени `MutableState`/`mutableStateOf` на `viewState = viewState.copy(...)`
+1. Замени `MutableState`/`mutableStateOf` на `updateState { it.copy(...) }`
 2. Замени прямые callback-и на sealed class ViewEvent
-3. Добавь `obtainEvent(viewEvent)` — единый обработчик событий
-4. Замени `SharedFlow`/`Channel` для действий на `viewAction = ...`
+3. Добавь `handleEvent(event)` — единый обработчик событий
+4. Замени `SharedFlow`/`Channel` для действий на `sendAction(...)`
 
 ## Миграция структуры пакетов
 

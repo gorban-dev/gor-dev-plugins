@@ -17,15 +17,15 @@ description: "Рефакторинг существующего Android кода
 - [ ] Screen не содержит логику, remember, вычисления
 
 **View:**
-- [ ] Существует отдельный View файл
+- [ ] Каждый View в отдельном файле
 - [ ] View принимает viewState и eventHandler
 - [ ] View не содержит логику, remember, side-effects
-- [ ] Есть Preview
+- [ ] Есть Preview: `{Feature}View_Preview` (private fun, обёрнутый в `{App}Theme { }`)
 
 **ViewModel:**
 - [ ] Наследует BaseSharedViewModel<State, Action, Event>
 - [ ] Не импортирует Compose
-- [ ] Вся логика в obtainEvent() и приватных методах
+- [ ] Вся логика в handleEvent() и приватных методах
 - [ ] Навигация через ViewAction
 
 **ViewState / ViewEvent / ViewAction:**
@@ -35,7 +35,7 @@ description: "Рефакторинг существующего Android кода
 - [ ] ViewAction — sealed class
 
 **UseCase:**
-- [ ] Наследует UseCase<Params, Result>
+- [ ] Наследует UseCase<Params, T>
 - [ ] Функция execute() (не operator fun)
 - [ ] Возвращает Result<T>
 - [ ] Обработка ошибок внутри

@@ -44,17 +44,9 @@ fun ExampleView(
 }
 
 @Preview(showBackground = true)
-@Composable
-private fun ExampleViewPreviewLight() {
-    ExampleView(
-        viewState = ExampleViewState(title = "Example Title"),
-        eventHandler = {}
-    )
-}
-
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun ExampleViewPreviewDark() {
+private fun ExampleViewPreviewLight() {
     ExampleView(
         viewState = ExampleViewState(title = "Example Title"),
         eventHandler = {}

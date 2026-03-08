@@ -51,10 +51,12 @@ feature/{featureName}/
 ### Шаг 4: Валидация
 Проверь каждый файл:
 - [ ] Screen не содержит логики, remember, вычислений
+- [ ] Каждый View в отдельном файле с Preview
+- [ ] Preview: `{Feature}View_Preview` (private fun, обёрнутый в `{App}Theme { }`)
 - [ ] View не содержит логики, remember, side-effects
 - [ ] ViewModel наследует BaseSharedViewModel
 - [ ] ViewModel не импортирует Compose
-- [ ] Каждый UseCase наследует UseCase<Params, Result>
+- [ ] Каждый UseCase наследует UseCase<Params, T>
 - [ ] execute() НЕ является operator fun
 - [ ] UseCase возвращает Result<T>
 - [ ] Repository имеет интерфейс I{Feature}Repository

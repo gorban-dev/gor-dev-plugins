@@ -48,7 +48,7 @@ description: "Доработка существующей Android фичи: до
 - [ ] Screen остаётся тонким адаптером
 - [ ] View не содержит логики
 - [ ] ViewModel не импортирует Compose
-- [ ] Новые UseCase наследуют UseCase<Params, Result>
+- [ ] Новые UseCase наследуют UseCase<Params, T>
 - [ ] DI модуль обновлён
 - [ ] Каждый новый класс в отдельном файле
 

@@ -11,37 +11,29 @@ class ExampleViewModel(
     initialState = ExampleViewState()
 ) {
 
-    override fun obtainEvent(viewEvent: ExampleViewEvent) {
-        when (viewEvent) {
+    override fun handleEvent(event: ExampleViewEvent) {
+        when (event) {
             is ExampleViewEvent.LoadData -> loadData()
-            is ExampleViewEvent.OnItemClicked -> onItemClicked(viewEvent.itemId)
+            is ExampleViewEvent.OnItemClicked -> onItemClicked(event.itemId)
         }
     }
 
     private fun loadData() {
         viewModelScope.launch {
-            viewState = viewState.copy(isLoading = true, error = null)
+            updateState { it.copy(isLoading = true, error = null) }
 
-            val result = getExampleDataUseCase.execute(Unit)
-
-            result.fold(
+            getExampleDataUseCase.execute(Unit).fold(
                 onSuccess = { data ->
-                    viewState = viewState.copy(
-                        isLoading = false,
-                        title = data.title
-                    )
+                    updateState { it.copy(isLoading = false, title = data.title) }
                 },
                 onFailure = { error ->
-                    viewState = viewState.copy(
-                        isLoading = false,
-                        error = error.message
-                    )
+                    updateState { it.copy(isLoading = false, error = error.message) }
                 }
             )
         }
     }
 
     private fun onItemClicked(itemId: String) {
-        viewAction = ExampleViewAction.NavigateToDetail(itemId)
+        sendAction(ExampleViewAction.NavigateToDetail(itemId))
     }
 }

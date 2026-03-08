@@ -3,12 +3,13 @@
 Эти правила действуют ВСЕГДА при работе с Android-кодом в проекте.
 
 ## Screen/View разделение
-- **Screen** — тонкий адаптер: читает viewState из ViewModel, передаёт в View вместе с eventHandler. Никакой логики, remember, вычислений.
+- **Screen** — тонкий адаптер: читает viewState через `collectAsStateWithLifecycle()`, подписка на actions через `CollectWithLifecycle {}`, передаёт viewState и eventHandler в View. Никакой логики, remember, вычислений.
 - **View** — чистый UI: только вёрстка по viewState и вызов eventHandler. Никакой логики, remember, side-effects.
 
 ## ViewModel
 - Единственный источник логики. Наследует `BaseSharedViewModel<State, Action, Event>`.
-- Хранит состояние, обрабатывает события через `obtainEvent()`, выполняет use cases.
+- Хранит состояние, обрабатывает события через `handleEvent()`, выполняет use cases.
+- Обновление состояния: `updateState { it.copy(...) }`. Одноразовые действия: `sendAction(...)`.
 - Навигация — только внутри ViewModel через средства навигации проекта.
 - Compose-зависимости в ViewModel ЗАПРЕЩЕНЫ.
 
@@ -47,9 +48,20 @@ feature/{featureName}/
 - Проект использует Koin или Kodein — определяй по build.gradle / существующим модулям.
 - Модули строятся по официальной документации фреймворка.
 
+## Тема и стили
+- Тема проектная (`{App}Theme`) — определяй имя по существующему коду (`object *Theme` в `ui/theme/`).
+- Цвета: `{App}Theme.colors.*`. НЕ `MaterialTheme.colorScheme`, НЕ хардкод `Color(0xFF...)`.
+- Типографика: `{App}Theme.typography.*`. НЕ `MaterialTheme.typography`, НЕ хардкод `TextStyle(fontSize = ...)`.
+
+## View и Preview
+- Каждый View — в отдельном файле `{Feature}View.kt` с обязательным Preview.
+- Нейминг Preview: `{Feature}View_Preview` (через underscore, `private fun`).
+- Preview **всегда** оборачивать в `{App}Theme { }`.
+
 ## Запреты
 - Compose-зависимости в ViewModel
 - Бизнес-логика в View
 - remember / side-effects в Screen
 - God-файлы (несколько классов в одном файле)
 - operator fun invoke в UseCase
+- MaterialTheme для цветов и типографики — только `{App}Theme`

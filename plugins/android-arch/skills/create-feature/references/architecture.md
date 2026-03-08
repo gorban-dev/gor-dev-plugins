@@ -8,9 +8,10 @@ Screen — тонкий адаптер между ViewModel и View.
 
 **Содержит:**
 - Получение ViewModel (через DI или viewModel())
-- Чтение viewState через collectAsState()
+- Чтение viewState через `collectAsStateWithLifecycle()`
+- Подписка на viewActions через `CollectWithLifecycle { }` (проектный extension)
 - Передача viewState в View
-- Передача eventHandler (obtainEvent) в View
+- Передача eventHandler (handleEvent) в View
 
 **ЗАПРЕЩЕНО в Screen:**
 - Бизнес-логика
@@ -29,7 +30,7 @@ View — чистый UI компонент.
 - Composable функцию с параметрами `(viewState: {Feature}ViewState, eventHandler: ({Feature}ViewEvent) -> Unit)`
 - Вёрстку на основе viewState
 - Вызовы eventHandler для пользовательских действий
-- Preview для светлой и тёмной темы (если в проекте есть поддержка тем)
+- Обязательный Preview: `{Feature}View_Preview` (private fun, обёрнутый в `{App}Theme { }`)
 
 **ЗАПРЕЩЕНО в View:**
 - Любая логика (if/else для бизнес-решений)
@@ -39,6 +40,8 @@ View — чистый UI компонент.
 - Навигация
 
 **UI Guidelines:**
+- Цвета: `{App}Theme.colors.*` (НЕ MaterialTheme, НЕ хардкод Color)
+- Типографика: `{App}Theme.typography.*` (НЕ MaterialTheme, НЕ хардкод TextStyle)
 - Минимум вложенности Composable
 - Если компонент используется в 5+ местах → вынести в `common/ui/{ComponentName}.kt`
 
@@ -58,10 +61,10 @@ class {Feature}ViewModel(
 ```
 
 **Содержит:**
-- Хранение и обновление состояния через `viewState = viewState.copy(...)`
-- Обработка событий в `obtainEvent(viewEvent)`
+- Хранение и обновление состояния через `updateState { it.copy(...) }`
+- Обработка событий в `handleEvent(event)`
 - Выполнение use cases в coroutines (viewModelScope)
-- Отправка одноразовых действий через `viewAction = ...`
+- Отправка одноразовых действий через `sendAction(...)`
 - Навигация через средства навигации проекта
 
 **Зависимости ViewModel (через конструктор / DI):**
