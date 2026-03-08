@@ -1,0 +1,19 @@
+{
+  "name": "google-dev-knowledge",
+  "version": "1.0.0",
+  "description": "Google Developer Knowledge API: real-time access to official documentation from Android, Firebase, Cloud, Chrome, Flutter, TensorFlow, web.dev, Google AI and more",
+  "license": "MIT",
+  "keywords": [
+    "google",
+    "documentation",
+    "android",
+    "firebase",
+    "cloud",
+    "chrome",
+    "flutter",
+    "tensorflow",
+    "web-dev",
+    "google-ai",
+    "mcp"
+  ]
+}

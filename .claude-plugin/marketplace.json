@@ -5,7 +5,7 @@
     "email": "gorban.dev@gmail.com"
   },
   "metadata": {
-    "description": "Android development plugins: Swagger model generation, architecture enforcement, Yandex Tracker integration",
+    "description": "Android development plugins: Swagger model generation, architecture enforcement, Yandex Tracker integration, Google Developer Knowledge API",
     "version": "1.0.0"
   },
   "plugins": [
@@ -23,6 +23,11 @@
       "name": "yandex-tracker",
       "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent for task execution, workflow skills",
       "source": "./plugins/yandex-tracker"
+    },
+    {
+      "name": "google-dev-knowledge",
+      "description": "Google Developer Knowledge API: real-time access to official docs from Android, Firebase, Cloud, Chrome, Flutter, TensorFlow, Google AI and more",
+      "source": "./plugins/google-dev-knowledge"
     }
   ]
 }
