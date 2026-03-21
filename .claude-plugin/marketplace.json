@@ -5,8 +5,8 @@
     "email": "gorban.dev@gmail.com"
   },
   "metadata": {
-    "description": "Android development plugins: Swagger model generation, architecture enforcement, Yandex Tracker integration, Google Developer Knowledge API",
-    "version": "1.0.0"
+    "description": "Android development plugins with unified workflow: Swagger model generation, architecture enforcement, Yandex Tracker integration, Google Developer Knowledge API, and dev-workflow orchestration",
+    "version": "1.1.0"
   },
   "plugins": [
     {
@@ -28,6 +28,11 @@
       "name": "google-dev-knowledge",
       "description": "Google Developer Knowledge API: real-time access to official docs from Android, Firebase, Cloud, Chrome, Flutter, TensorFlow, Google AI and more",
       "source": "./plugins/google-dev-knowledge"
+    },
+    {
+      "name": "dev-workflow",
+      "description": "Unified development workflow: design, planning, execution, verification, debugging, TDD, and code review. Works on top of any domain-specific plugins.",
+      "source": "./plugins/dev-workflow"
     }
   ]
 }
