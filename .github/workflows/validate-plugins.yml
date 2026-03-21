@@ -1,0 +1,141 @@
+name: Validate Plugins
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-structure:
+    name: Validate plugin structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate marketplace.json
+        run: |
+          echo "Checking marketplace.json..."
+          python3 -c "
+          import json, sys
+          data = json.load(open('.claude-plugin/marketplace.json'))
+          assert 'name' in data, 'Missing name'
+          assert 'plugins' in data, 'Missing plugins'
+          for p in data['plugins']:
+              assert 'name' in p, f'Plugin missing name: {p}'
+              assert 'source' in p, f'Plugin missing source: {p}'
+              print(f'  ✓ {p[\"name\"]}')
+          print(f'All {len(data[\"plugins\"])} plugins valid')
+          "
+
+      - name: Validate plugin.json files
+        run: |
+          echo "Checking plugin.json files..."
+          python3 -c "
+          import json, glob, sys
+          files = glob.glob('plugins/*/.claude-plugin/plugin.json')
+          assert files, 'No plugin.json files found'
+          for f in sorted(files):
+              data = json.load(open(f))
+              assert 'name' in data, f'{f}: missing name'
+              assert 'version' in data, f'{f}: missing version'
+              assert 'description' in data, f'{f}: missing description'
+              print(f'  ✓ {data[\"name\"]} v{data[\"version\"]}')
+          print(f'All {len(files)} plugin.json files valid')
+          "
+
+      - name: Validate skill frontmatter
+        run: |
+          echo "Checking SKILL.md frontmatter..."
+          python3 -c "
+          import glob, re, sys
+          try:
+              import yaml
+          except ImportError:
+              import pip._vendor.tomli  # fallback - just check regex
+              yaml = None
+
+          files = sorted(glob.glob('plugins/*/skills/*/SKILL.md'))
+          assert files, 'No SKILL.md files found'
+          errors = []
+          warnings = []
+          for f in files:
+              content = open(f).read()
+              match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+              if not match:
+                  # Some skills are reference-only (no frontmatter) — warn, don't fail
+                  warnings.append(f'{f}: no YAML frontmatter (reference skill?)')
+                  continue
+              if yaml:
+                  fm = yaml.safe_load(match.group(1))
+                  if not fm or 'description' not in fm:
+                      errors.append(f'{f}: missing description in frontmatter')
+                      continue
+                  if len(fm['description']) < 50:
+                      errors.append(f'{f}: description too short')
+                      continue
+              print(f'  ✓ {f}')
+          for w in warnings:
+              print(f'  ⚠ {w}')
+          if errors:
+              for e in errors:
+                  print(f'  ✗ {e}', file=sys.stderr)
+              sys.exit(1)
+          print(f'All {len(files)} skills checked ({len(warnings)} warnings)')
+          "
+
+      - name: Validate agent frontmatter
+        run: |
+          echo "Checking agent frontmatter..."
+          python3 -c "
+          import glob, re, sys
+          try:
+              import yaml
+          except ImportError:
+              yaml = None
+
+          files = sorted(glob.glob('plugins/*/agents/*.md'))
+          assert files, 'No agent files found'
+          errors = []
+          required = ['name', 'description']
+          for f in files:
+              content = open(f).read()
+              match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+              if not match:
+                  errors.append(f'{f}: missing YAML frontmatter')
+                  continue
+              if yaml:
+                  fm = yaml.safe_load(match.group(1))
+                  if not fm:
+                      errors.append(f'{f}: empty frontmatter')
+                      continue
+                  for field in required:
+                      if field not in fm:
+                          errors.append(f'{f}: missing {field}')
+              print(f'  ✓ {f}')
+          if errors:
+              for e in errors:
+                  print(f'  ✗ {e}', file=sys.stderr)
+              sys.exit(1)
+          print(f'All {len(files)} agents valid')
+          "
+
+  dev-workflow-tests:
+    name: dev-workflow plugin tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pytest pyyaml
+
+      - name: Run tests
+        working-directory: plugins/dev-workflow
+        run: python -m pytest tests/ -v
