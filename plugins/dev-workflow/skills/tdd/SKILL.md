@@ -144,6 +144,14 @@ Before declaring TDD work complete:
 - 🚫 Writing complex tests — each test should verify one behavior
 - 🚫 Rationalizing "this is too simple to test" — simple code has simple tests
 
+For detailed mocking anti-patterns and examples, see `references/anti-patterns.md`.
+
+## Deep Dive References
+
+- `references/testable-design.md` — Principles for writing testable code: dependency injection, pure functions, minimal public surface area.
+- `references/anti-patterns.md` — 5 common mocking and testing mistakes with code examples and gate questions.
+- `references/mocking-strategy.md` — What to mock (system boundaries) and what not to mock (your own code). Fake vs. mock vs. stub decision guide.
+
 ## Rules
 
 - Follow the cycle strictly: RED → GREEN → REFACTOR. Never skip a phase.

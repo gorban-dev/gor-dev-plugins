@@ -131,9 +131,17 @@ Instead:
 - 🚩 Adding null checks or try/catch as band-aids instead of fixing the cause
 - 🚩 The fix makes the code more complex without clear justification
 
+## Deep Dive References
+
+For detailed techniques, consult these references:
+
+- `references/defense-in-depth.md` — After fixing a bug, apply validation at 4 layers (entry point, business logic, environment, instrumentation) to make the bug class structurally impossible.
+- `references/root-cause-tracing.md` — Techniques for tracing upward through call stacks, adding instrumentation, and finding the original trigger.
+
 ## Rules
 
 - Read the FULL error message. The answer is often in the stack trace.
 - One variable at a time. Never change multiple things and hope for the best.
 - If you find the root cause, explain it to the user BEFORE fixing. The user should understand what went wrong.
 - Evidence over intuition. "I think it's X" is not sufficient — show the trace.
+- After fixing, consider defense-in-depth: add validation at multiple layers to prevent recurrence (see `references/defense-in-depth.md`).

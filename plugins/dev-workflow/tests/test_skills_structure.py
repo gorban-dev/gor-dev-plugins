@@ -89,6 +89,17 @@ class TestAgentFiles:
         )
 
 
+EXPECTED_REFERENCES = {
+    "plan-task": ["plan-format.md"],
+    "debug": ["defense-in-depth.md", "root-cause-tracing.md"],
+    "tdd": ["testable-design.md", "anti-patterns.md", "mocking-strategy.md"],
+}
+
+EXPECTED_SHARED_REFERENCES = [
+    "persuasion-principles.md",
+]
+
+
 class TestReferences:
     def test_plan_format_exists(self):
         path = PLUGIN_ROOT / "skills" / "plan-task" / "references" / "plan-format.md"
@@ -98,6 +109,42 @@ class TestReferences:
         path = PLUGIN_ROOT / "skills" / "plan-task" / "references" / "plan-format.md"
         content = path.read_text()
         assert len(content) > 100, "plan-format.md must not be empty"
+
+    @pytest.mark.parametrize(
+        "skill_name,ref_file",
+        [
+            (skill, ref)
+            for skill, refs in EXPECTED_REFERENCES.items()
+            for ref in refs
+        ],
+    )
+    def test_skill_reference_exists(self, skill_name, ref_file):
+        path = PLUGIN_ROOT / "skills" / skill_name / "references" / ref_file
+        assert path.exists(), f"Reference {ref_file} must exist for skill '{skill_name}'"
+
+    @pytest.mark.parametrize(
+        "skill_name,ref_file",
+        [
+            (skill, ref)
+            for skill, refs in EXPECTED_REFERENCES.items()
+            for ref in refs
+        ],
+    )
+    def test_skill_reference_not_empty(self, skill_name, ref_file):
+        path = PLUGIN_ROOT / "skills" / skill_name / "references" / ref_file
+        content = path.read_text()
+        assert len(content) > 100, f"Reference {ref_file} in '{skill_name}' must not be empty"
+
+    @pytest.mark.parametrize("ref_file", EXPECTED_SHARED_REFERENCES)
+    def test_shared_reference_exists(self, ref_file):
+        path = PLUGIN_ROOT / "skills" / "references" / ref_file
+        assert path.exists(), f"Shared reference {ref_file} must exist"
+
+    @pytest.mark.parametrize("ref_file", EXPECTED_SHARED_REFERENCES)
+    def test_shared_reference_not_empty(self, ref_file):
+        path = PLUGIN_ROOT / "skills" / "references" / ref_file
+        content = path.read_text()
+        assert len(content) > 100, f"Shared reference {ref_file} must not be empty"
 
 
 class TestHooks:

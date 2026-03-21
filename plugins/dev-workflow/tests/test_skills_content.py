@@ -45,6 +45,14 @@ class TestDebugSkill:
         _, body = read_skill("debug")
         assert "Red Flag" in body or "red flag" in body.lower()
 
+    def test_references_defense_in_depth(self):
+        _, body = read_skill("debug")
+        assert "defense-in-depth" in body
+
+    def test_references_root_cause_tracing(self):
+        _, body = read_skill("debug")
+        assert "root-cause-tracing" in body
+
 
 class TestPlanTaskSkill:
     def test_contains_granularity_requirement(self):
@@ -76,6 +84,22 @@ class TestDesignSkill:
     def test_transitions_to_plan_task(self):
         _, body = read_skill("design")
         assert "plan-task" in body
+
+    def test_has_verify_by_running(self):
+        _, body = read_skill("design")
+        assert "running" in body.lower() and "reading" in body.lower()
+
+    def test_has_acceptance_proof(self):
+        _, body = read_skill("design")
+        assert "acceptance" in body.lower() or "Acceptance" in body
+
+    def test_has_vertical_slices(self):
+        _, body = read_skill("design")
+        assert "vertical slice" in body.lower()
+
+    def test_has_flag_unknowns(self):
+        _, body = read_skill("design")
+        assert "⚠️" in body or "unknown" in body.lower()
 
 
 class TestExecutePlanSkill:
@@ -110,6 +134,18 @@ class TestTddSkill:
     def test_defines_good_fit(self):
         _, body = read_skill("tdd")
         assert "Good fit" in body or "good fit" in body.lower()
+
+    def test_references_testable_design(self):
+        _, body = read_skill("tdd")
+        assert "testable-design" in body
+
+    def test_references_anti_patterns(self):
+        _, body = read_skill("tdd")
+        assert "anti-patterns" in body
+
+    def test_references_mocking_strategy(self):
+        _, body = read_skill("tdd")
+        assert "mocking-strategy" in body
 
 
 class TestCodeReviewerAgent:

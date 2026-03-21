@@ -47,11 +47,21 @@ Design topic from user: **$ARGUMENTS**
 Before proposing anything, understand the current state:
 
 1. **Read relevant code**: Explore the codebase areas related to the design topic.
-2. **Identify constraints**: What frameworks, patterns, and conventions are already in use?
-3. **Check documentation**: If relevant, use `google-dev-knowledge:google-dev-docs` to research APIs or best practices.
-4. **Understand the domain**: What existing plugin skills are relevant? (android-arch patterns, swagger conventions, etc.)
+2. **Verify by running, not just reading**: Don't assume code works from reading alone. Run it, execute tests, or trigger the behavior to confirm your understanding is correct.
+3. **Identify constraints**: What frameworks, patterns, and conventions are already in use?
+4. **Check documentation**: If relevant, use `google-dev-knowledge:google-dev-docs` to research APIs or best practices.
+5. **Understand the domain**: What existing plugin skills are relevant? (android-arch patterns, swagger conventions, etc.)
+6. **Flag unknowns**: Mark anything uncertain with ⚠️. If a question requires investigation (spike), say so explicitly rather than guessing.
 
-### Step 2: Clarify Requirements
+### Step 2: Define Acceptance Proof
+
+Before diving into design, define **how we'll know it's done**:
+- What specific behavior proves the solution works?
+- What does the user need to see or run to accept the result?
+
+This prevents scope creep and gives implementation a clear target.
+
+### Step 3: Clarify Requirements
 
 Ask the user **2-3 targeted questions** about:
 - **Scope**: What's in scope and what's explicitly out of scope?
@@ -60,7 +70,7 @@ Ask the user **2-3 targeted questions** about:
 
 Ask questions **one at a time** — do not overwhelm with a long list.
 
-### Step 3: Propose Approaches
+### Step 4: Propose Approaches
 
 Present **2-3 approaches**, each with:
 
@@ -89,7 +99,7 @@ Present **2-3 approaches**, each with:
 
 End with a clear recommendation and why.
 
-### Step 4: Write Design Specification
+### Step 5: Write Design Specification
 
 After the user selects an approach, create a design document:
 
@@ -119,11 +129,15 @@ Date: {YYYY-MM-DD}
 - Create: {list of new files}
 - Modify: {list of existing files to change}
 
+## Delivery Slices
+- Slice 1: {vertical slice — a complete path through all layers}
+- Slice 2: {next vertical slice}
+
 ## Open Questions
-{Anything still unresolved}
+{Anything still unresolved — mark unknowns with ⚠️}
 ```
 
-### Step 5: Confirm and Transition
+### Step 6: Confirm and Transition
 
 1. Present the design document to the user for review.
 2. After approval, suggest the next step: "Design approved. Would you like to create an implementation plan with `plan-task`?"
@@ -135,3 +149,4 @@ Date: {YYYY-MM-DD}
 - Always ground proposals in the actual codebase — don't suggest patterns that conflict with existing conventions.
 - Approaches should be genuinely different, not variations of the same idea.
 - Be honest about trade-offs — every approach has downsides.
+- Think in **vertical slices**: each delivery increment should work end-to-end through all layers (UI → logic → data), not layer-by-layer (all UI first, then all logic).
