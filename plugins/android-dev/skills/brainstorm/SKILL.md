@@ -94,7 +94,7 @@ Approaches must be **fundamentally different**, not variations of the same idea.
 
 After the user selects an approach — create a document:
 
-1. Save to `docs/designs/{feature-name}.md`
+1. Save to `.claude/docs/android-dev/designs/{feature-name}.md`
 2. Format:
 
 ```markdown

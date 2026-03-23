@@ -10,7 +10,7 @@ description: |
 
   <example>
   Context: User wants to execute an existing plan
-  user: "execute the plan from docs/plans/2026-03-20-settings.md"
+  user: "execute the plan from .claude/docs/android-dev/plans/2026-03-20-settings.md"
   assistant: "Using plan skill in execute mode for step-by-step plan execution."
   </example>
 
@@ -41,7 +41,7 @@ Triggers:
 Triggers:
 - User references an existing plan (file or link)
 - User says "execute the plan" / "start from the plan"
-- A plan file exists in `docs/plans/`
+- A plan file exists in `.claude/docs/android-dev/plans/`
 
 ---
 
@@ -97,7 +97,7 @@ Validate the plan before saving:
 
 ### Step 5: Save
 
-Save the plan to a file: `docs/plans/{YYYY-MM-DD}-{feature-name}.md`
+Save the plan to a file: `.claude/docs/android-dev/plans/{YYYY-MM-DD}-{feature-name}.md`
 
 Format — see `references/plan-format.md`:
 
@@ -140,7 +140,7 @@ Output to the user: path to the plan file, number of tasks, time estimate.
 
 ### Step 1: Load the Plan
 
-1. Read the plan file (from the path specified by the user or from `docs/plans/`)
+1. Read the plan file (from the path specified by the user or from `.claude/docs/android-dev/plans/`)
 2. Display the task list to the user
 3. Confirm scope: "Executing {N} tasks. Shall I begin?"
 

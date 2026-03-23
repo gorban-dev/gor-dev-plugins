@@ -46,8 +46,8 @@ Every claim that something "works" or "is done" must be backed by evidence gathe
 ### Step 1: Identify What to Verify
 
 Determine the scope of verification:
-- If a **plan document** exists (`docs/plans/*.md`), use its task verification criteria.
-- If a **design spec** exists (`docs/designs/*.md`), verify against its requirements.
+- If a **plan document** exists (`.claude/docs/android-dev/plans/*.md`), use its task verification criteria.
+- If a **design spec** exists (`.claude/docs/android-dev/designs/*.md`), verify against its requirements.
 - If neither exists, ask the user what the completion criteria are.
 
 ### Step 2: Gather Fresh Evidence

@@ -56,7 +56,7 @@ class TestBrainstormSkill:
 
     def test_saves_to_docs_designs(self):
         _, body = read_skill("brainstorm")
-        assert "docs/designs/" in body
+        assert ".claude/docs/android-dev/designs/" in body
 
     def test_has_acceptance_proof(self):
         _, body = read_skill("brainstorm")
@@ -86,7 +86,7 @@ class TestPlanSkill:
 
     def test_saves_to_docs_plans(self):
         _, body = read_skill("plan")
-        assert "docs/plans/" in body
+        assert ".claude/docs/android-dev/plans/" in body
 
 
 class TestReviewSkill:
