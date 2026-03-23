@@ -19,24 +19,24 @@ Claude Code plugin marketplace for Android development.
 
 ## android-dev (v2.0.0)
 
-Один агент заменяет 6 отдельных агентов и 14 скилов из предыдущих `android-arch` + `dev-workflow`.
+One agent replaces 6 separate agents and 14 skills from the previous `android-arch` + `dev-workflow` plugins.
 
 ### Agent
 
-**android-dev** (model: opus) — senior Android developer. Автоматически определяет нужный skill и проактивно запускает полный цикл без лишних вопросов.
+**android-dev** (model: opus) — senior Android developer. Automatically selects the right skill and proactively runs the full development cycle.
 
 ### Skills
 
 | Skill | Description |
 |-------|-------------|
-| `brainstorm` | Исследование и дизайн решения перед реализацией. 2-3 подхода с trade-offs |
-| `plan` | Создание гранулярного плана (задачи по 2-5 мин) и пошаговое выполнение |
-| `implement` | Реализация: создание фичи с нуля, доработка существующей, рефакторинг к стандарту |
-| `debug` | Систематическая отладка: root cause → hypothesis → fix → verify |
+| `brainstorm` | Explore approaches and design solutions before coding. Proposes 2-3 options with trade-offs |
+| `plan` | Create granular implementation plans (2-5 min tasks) and execute them step by step |
+| `implement` | Build features from scratch, modify existing ones, or refactor to architecture standard |
+| `debug` | Systematic debugging: root cause → hypothesis → fix → verify |
 | `tdd` | Test-driven development: RED → GREEN → REFACTOR |
-| `review` | Двухпроходное ревью: архитектура (8 категорий) + code quality (6 категорий) |
-| `test-ui` | UI-тестирование на устройстве через claude-in-mobile CLI |
-| `verify` | Evidence-based проверка завершённости — без "should work" |
+| `review` | Two-pass review: architecture compliance (8 categories) + code quality (6 categories) |
+| `test-ui` | UI testing on device via claude-in-mobile CLI |
+| `verify` | Evidence-based completion check — no "should work" claims allowed |
 
 ### Proactive Workflow
 
@@ -44,16 +44,16 @@ Claude Code plugin marketplace for Android development.
 implement → review (auto) → fix if FAIL (max 3) → test-ui (auto) → verify (auto) → report
 ```
 
-Для сложных задач:
+For complex tasks:
 ```
 brainstorm → plan → implement → review → test-ui → verify
 ```
 
 ### Architecture
 
-Строгие правила для Jetpack Compose + Clean Architecture:
-- **Screen** — тонкий адаптер (collectAsStateWithLifecycle)
-- **View** — чистый UI, без логики и side-effects
+Strict rules for Jetpack Compose + Clean Architecture:
+- **Screen** — thin adapter (collectAsStateWithLifecycle, CollectWithLifecycle)
+- **View** — pure UI, no logic or side-effects
 - **ViewModel** — BaseSharedViewModel, handleEvent(), updateState
 - **UseCase** — suspend fun execute(), returns Result<T>
 - **Repository** — interface + impl, depends only on DataSources
