@@ -1,38 +1,38 @@
 # Android Architecture Core Rules
 
-Эти правила действуют ВСЕГДА при работе с Android-кодом в проекте.
+These rules ALWAYS apply when working with Android code in the project.
 
-## Screen/View разделение
-- **Screen** — тонкий адаптер: читает viewState через `collectAsStateWithLifecycle()`, подписка на actions через `CollectWithLifecycle {}`, передаёт viewState и eventHandler в View. Никакой логики, remember, вычислений.
-- **View** — чистый UI: только вёрстка по viewState и вызов eventHandler. Никакой логики, remember, side-effects.
+## Screen/View Separation
+- **Screen** — thin adapter: reads viewState via `collectAsStateWithLifecycle()`, subscribes to actions via `CollectWithLifecycle {}`, passes viewState and eventHandler to View. No logic, no remember, no computations. No UI state (PagerState, ScrollState, LazyListState — these belong in View).
+- **View** — pure UI: only layout based on viewState and calling eventHandler. No business logic. UI state (`rememberPagerState`, `rememberScrollState`, `rememberLazyListState`) is allowed here. `LaunchedEffect`/`snapshotFlow` for syncing UI state with eventHandler is allowed here.
 
 ## ViewModel
-- Единственный источник логики. Наследует `BaseSharedViewModel<State, Action, Event>`.
-- Хранит состояние, обрабатывает события через `handleEvent()`, выполняет use cases.
-- Обновление состояния: `updateState { it.copy(...) }`. Одноразовые действия: `sendAction(...)`.
-- Навигация — только внутри ViewModel через средства навигации проекта.
-- Compose-зависимости в ViewModel ЗАПРЕЩЕНЫ.
+- Single source of logic. Extends `BaseSharedViewModel<State, Action, Event>`.
+- Holds state, processes events via `handleEvent()`, executes use cases.
+- State updates: `updateState { it.copy(...) }`. One-off actions: `sendAction(...)`.
+- Navigation — only within ViewModel through the project's navigation mechanism.
+- Compose dependencies in ViewModel are FORBIDDEN.
 
 ## UseCase
-- Отдельный класс: `{Feature}{Action}UseCase.kt`. Наследует `UseCase<Params, Result>`.
-- Одна функция `suspend fun execute(params): Result` (НЕ operator fun).
-- Всегда возвращает `Result<T>`. Обработка ошибок — в UseCase.
-- Зависит только от Repository.
+- Separate class: `{Feature}{Action}UseCase.kt`. Extends `UseCase<Params, Result>`.
+- Single function `suspend fun execute(params): Result` (NOT operator fun).
+- Always returns `Result<T>`. Error handling — inside UseCase.
+- Depends only on Repository.
 
 ## Repository
-- Интерфейс `I{Feature}Repository` + реализация `{Feature}Repository`.
-- Зависит только от DataSources. Возвращает чистые данные.
+- Interface `I{Feature}Repository` + implementation `{Feature}Repository`.
+- Depends only on DataSources. Returns clean data.
 
 ## DataSource
 - `{Feature}LocalDataSource.kt`, `{Feature}RemoteDataSource.kt`.
-- Зависит от: Ktor, SQLDelight, FileSystem, платформенных API.
+- Depends on: Ktor, SQLDelight, FileSystem, platform APIs.
 
-## Naming conventions
+## Naming Conventions
 - `{Feature}Screen.kt`, `{Feature}View.kt`, `{Feature}ViewModel.kt`
 - `{Feature}ViewState.kt`, `{Feature}ViewEvent.kt`, `{Feature}ViewAction.kt`
 - `{Feature}{Action}UseCase.kt`, `I{Feature}Repository.kt`, `{Feature}Repository.kt`
 
-## Структура пакетов
+## Package Structure
 ```
 feature/{featureName}/
     presentation/screen/  presentation/view/  presentation/viewmodel/
@@ -41,27 +41,27 @@ feature/{featureName}/
     di/
 ```
 
-## Правила файлов
-- Каждый класс (включая enum, sealed) — отдельный файл. Никаких god-файлов.
+## File Rules
+- Each class (including enum, sealed) — separate file. No god-files.
 
 ## DI
-- Проект использует Koin или Kodein — определяй по build.gradle / существующим модулям.
-- Модули строятся по официальной документации фреймворка.
+- Project uses Koin or Kodein — determine from build.gradle / existing modules.
+- Modules follow the official framework documentation.
 
-## Тема и стили
-- Тема проектная (`{App}Theme`) — определяй имя по существующему коду (`object *Theme` в `ui/theme/`).
-- Цвета: `{App}Theme.colors.*`. НЕ `MaterialTheme.colorScheme`, НЕ хардкод `Color(0xFF...)`.
-- Типографика: `{App}Theme.typography.*`. НЕ `MaterialTheme.typography`, НЕ хардкод `TextStyle(fontSize = ...)`.
+## Theme and Styles
+- Project theme (`{App}Theme`) — determine the name from existing code (`object *Theme` in `ui/theme/`).
+- Colors: `{App}Theme.colors.*`. NOT `MaterialTheme.colorScheme`, NOT hardcoded `Color(0xFF...)`.
+- Typography: `{App}Theme.typography.*`. NOT `MaterialTheme.typography`, NOT hardcoded `TextStyle(fontSize = ...)`.
 
-## View и Preview
-- Каждый View — в отдельном файле `{Feature}View.kt` с обязательным Preview.
-- Нейминг Preview: `{Feature}View_Preview` (через underscore, `private fun`).
-- Preview **всегда** оборачивать в `{App}Theme { }`.
+## View and Preview
+- Each View — in a separate file `{Feature}View.kt` with a mandatory Preview.
+- Preview naming: `{Feature}View_Preview` (with underscore, `private fun`).
+- Preview **always** wrapped in `{App}Theme { }`.
 
-## Запреты
-- Compose-зависимости в ViewModel
-- Бизнес-логика в View
-- remember / side-effects в Screen
-- God-файлы (несколько классов в одном файле)
-- operator fun invoke в UseCase
-- MaterialTheme для цветов и типографики — только `{App}Theme`
+## Prohibited
+- Compose dependencies in ViewModel
+- Business logic in View
+- remember / side-effects in Screen (UI state belongs in View)
+- God-files (multiple classes in one file)
+- operator fun invoke in UseCase
+- MaterialTheme for colors and typography — only `{App}Theme`

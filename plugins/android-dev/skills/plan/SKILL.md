@@ -1,105 +1,105 @@
 ---
 description: |
-  Создание и выполнение плана реализации. Два режима: создание гранулярного плана (задачи по 2-5 минут) и пошаговое выполнение. Используй для планирования сложных задач или после brainstorm.
+  Create and execute an implementation plan. Two modes: creating a granular plan (tasks of 2-5 minutes each) and step-by-step execution. Use for planning complex tasks or after brainstorm.
 
   <example>
-  Context: Пользователь хочет спланировать реализацию фичи
-  user: "составь план для экрана настроек"
-  assistant: "Использую plan skill в режиме plan для создания гранулярного плана settings feature."
+  Context: User wants to plan a feature implementation
+  user: "create a plan for the settings screen"
+  assistant: "Using plan skill in plan mode to create a granular plan for the settings feature."
   </example>
 
   <example>
-  Context: Пользователь хочет выполнить готовый план
-  user: "выполни план из docs/plans/2026-03-20-settings.md"
-  assistant: "Использую plan skill в режиме execute для пошагового выполнения плана."
+  Context: User wants to execute an existing plan
+  user: "execute the plan from docs/plans/2026-03-20-settings.md"
+  assistant: "Using plan skill in execute mode for step-by-step plan execution."
   </example>
 
   <example>
-  Context: Пользователь хочет разбить сложную задачу на шаги
-  user: "разбей задачу по миграции DI на шаги"
-  assistant: "Использую plan skill для декомпозиции задачи миграции DI на гранулярные задачи."
+  Context: User wants to break a complex task into steps
+  user: "break down the DI migration task into steps"
+  assistant: "Using plan skill to decompose the DI migration task into granular tasks."
   </example>
 ---
 
 # Plan — Create & Execute Implementation Plans
 
-Ты создаёшь и выполняешь гранулярные планы реализации. Два режима работы.
+You create and execute granular implementation plans. Two operating modes.
 
-## Вход
+## Input
 
-Задача от пользователя: **$ARGUMENTS**
+Task from the user: **$ARGUMENTS**
 
-## Определение режима
+## Determining the Mode
 
-### Режим PLAN (по умолчанию)
-Триггеры:
-- Пользователь просит спланировать / составить план / разбить задачу
-- Нет указания на готовый план для выполнения
-- После brainstorm, когда нужно превратить идеи в задачи
+### PLAN Mode (default)
+Triggers:
+- User asks to plan / create a plan / break down a task
+- No reference to an existing plan for execution
+- After brainstorm, when ideas need to be turned into tasks
 
-### Режим EXECUTE
-Триггеры:
-- Пользователь указывает готовый план (файл или ссылку)
-- Пользователь говорит "выполни план" / "начни по плану"
-- Есть файл плана в `docs/plans/`
+### EXECUTE Mode
+Triggers:
+- User references an existing plan (file or link)
+- User says "execute the plan" / "start from the plan"
+- A plan file exists in `docs/plans/`
 
 ---
 
-## Режим: PLAN
+## Mode: PLAN
 
-### Шаг 1: Анализ scope
+### Step 1: Scope Analysis
 
-1. Прочитай задачу / дизайн-документ / результат brainstorm
-2. Изучи текущий codebase:
-   - Найди связанные фичи через Glob
-   - Прочитай `rules/android-core.md` для понимания архитектуры
-   - Определи какие файлы нужно создать / изменить / только прочитать
-3. Определи зависимости от существующего кода
+1. Read the task / design document / brainstorm result
+2. Study the current codebase:
+   - Find related features via Glob
+   - Read `$CLAUDE_PLUGIN_ROOT/rules/android-core.md` to understand the architecture
+   - Determine which files need to be created / modified / only read
+3. Identify dependencies on existing code
 
-### Шаг 2: Маппинг файлов
+### Step 2: File Mapping
 
-Составь полный список файлов с точными путями:
-- **Create** — новые файлы которые нужно создать
-- **Modify** — существующие файлы которые нужно изменить
-- **Read** — файлы для контекста (не менять)
+Compile a complete list of files with exact paths:
+- **Create** — new files that need to be created
+- **Modify** — existing files that need to be changed
+- **Read** — files for context (do not change)
 
-### Шаг 3: Декомпозиция на задачи
+### Step 3: Task Decomposition
 
-Разбей работу на гранулярные задачи:
+Break the work into granular tasks:
 
-**Требования к каждой задаче:**
-- **2-5 минут** на выполнение (не больше)
-- **Single responsibility** — одна задача = одно действие
-- **Конкретный критерий проверки** — не "убедись что работает", а "файл создан и содержит data class с полями X, Y, Z"
-- **Ссылка на skill** если применимо (implement, review, test-ui, etc.)
-- **Явные зависимости** — от каких задач зависит
-- **Точные пути файлов** — никаких "и другие файлы"
+**Requirements for each task:**
+- **2-5 minutes** to complete (no more)
+- **Single responsibility** — one task = one action
+- **Concrete verification criteria** — not "make sure it works", but "file is created and contains a data class with fields X, Y, Z"
+- **Skill reference** if applicable (implement, review, test-ui, etc.)
+- **Explicit dependencies** — which tasks it depends on
+- **Exact file paths** — no "and other files"
 
-**Порядок задач:**
-1. Подготовка (чтение правил, анализ существующего кода)
-2. Domain слой (UseCases, Repository interfaces)
-3. Data слой (Repository implementations, DataSources)
-4. Presentation слой (ViewState, ViewEvent, ViewAction, ViewModel)
-5. UI слой (Screen, View)
-6. DI (модуль зависимостей)
-7. Review (проверка архитектуры)
-8. Testing (UI тесты на устройстве)
+**Task order:**
+1. Preparation (reading rules, analyzing existing code)
+2. Domain layer (UseCases, Repository interfaces)
+3. Data layer (Repository implementations, DataSources)
+4. Presentation layer (ViewState, ViewEvent, ViewAction, ViewModel)
+5. UI layer (Screen, View)
+6. DI (dependency module)
+7. Review (architecture check)
+8. Testing (UI tests on device)
 
-### Шаг 4: Самопроверка плана
+### Step 4: Plan Self-Check
 
-Валидируй план перед сохранением:
-- [ ] Каждая задача занимает 2-5 минут
-- [ ] Каждая задача имеет конкретный критерий проверки
-- [ ] Зависимости корректны (нет циклов, нет пропущенных)
-- [ ] Все файлы из маппинга покрыты задачами
-- [ ] Порядок задач логичен (domain → data → presentation → UI → DI)
-- [ ] Нет задач-"монстров" (больше 3 файлов за раз)
+Validate the plan before saving:
+- [ ] Each task takes 2-5 minutes
+- [ ] Each task has concrete verification criteria
+- [ ] Dependencies are correct (no cycles, none missing)
+- [ ] All files from the mapping are covered by tasks
+- [ ] Task order is logical (domain -> data -> presentation -> UI -> DI)
+- [ ] No "monster" tasks (more than 3 files at once)
 
-### Шаг 5: Сохранение
+### Step 5: Save
 
-Сохрани план в файл: `docs/plans/{YYYY-MM-DD}-{feature-name}.md`
+Save the plan to a file: `docs/plans/{YYYY-MM-DD}-{feature-name}.md`
 
-Формат — см. `references/plan-format.md`:
+Format — see `references/plan-format.md`:
 
 ```markdown
 # Plan: {feature-name}
@@ -132,44 +132,44 @@ Design: {link to design doc, if exists}
 {Edge cases, risks, open questions, decisions made}
 ```
 
-Выведи пользователю: путь к файлу плана, количество задач, оценку времени.
+Output to the user: path to the plan file, number of tasks, time estimate.
 
 ---
 
-## Режим: EXECUTE
+## Mode: EXECUTE
 
-### Шаг 1: Загрузка плана
+### Step 1: Load the Plan
 
-1. Прочитай файл плана (из указанного пользователем пути или из `docs/plans/`)
-2. Отобрази список задач пользователю
-3. Подтверди scope: "Выполняю {N} задач. Начинаю?"
+1. Read the plan file (from the path specified by the user or from `docs/plans/`)
+2. Display the task list to the user
+3. Confirm scope: "Executing {N} tasks. Shall I begin?"
 
-### Шаг 2: Последовательное выполнение
+### Step 2: Sequential Execution
 
-Для каждой задачи по порядку:
+For each task in order:
 
-1. **Анонс** — "Task {N}/{total}: {title}"
-2. **Проверка зависимостей** — все зависимые задачи выполнены?
-   - Если нет — сообщи пользователю, предложи варианты
-3. **Выполнение**:
-   - Если указан skill — вызови его (implement, review, test-ui и т.д.)
-   - Если skill не указан — выполни действие самостоятельно
-4. **Верификация** — проверь по критерию из плана
-   - Если проверка пройдена — отметь задачу как выполненную
-   - Если не пройдена — попробуй исправить, если не получается — отметь как failed
-5. **Статус** — обнови статус задачи в плане (если возможно)
+1. **Announce** — "Task {N}/{total}: {title}"
+2. **Check dependencies** — are all dependent tasks completed?
+   - If not — inform the user, suggest options
+3. **Execute**:
+   - If a skill is specified — invoke it (implement, review, test-ui, etc.)
+   - If no skill is specified — perform the action directly
+4. **Verify** — check against the criteria from the plan
+   - If verification passes — mark the task as completed
+   - If it fails — try to fix it; if unable — mark as failed
+5. **Status** — update the task status in the plan (if possible)
 
-### Шаг 3: Обработка блокеров
+### Step 3: Handle Blockers
 
-Если задача не может быть выполнена:
-1. Сообщи пользователю причину
-2. Предложи варианты:
-   - Пропустить задачу и продолжить
-   - Изменить подход
-   - Остановить выполнение
-3. Запроси решение у пользователя
+If a task cannot be completed:
+1. Inform the user of the reason
+2. Suggest options:
+   - Skip the task and continue
+   - Change the approach
+   - Stop execution
+3. Request a decision from the user
 
-### Шаг 4: Финальный отчёт
+### Step 4: Final Report
 
 ```
 ## Execution Report: {plan name}
@@ -177,10 +177,10 @@ Design: {link to design doc, if exists}
 ### Tasks
 | # | Task | Status | Notes |
 |---|------|--------|-------|
-| 1 | {title} | ✅ Done | {details} |
-| 2 | {title} | ✅ Done | |
-| 3 | {title} | ⏭ Skipped | {reason} |
-| 4 | {title} | ❌ Failed | {reason} |
+| 1 | {title} | Done | {details} |
+| 2 | {title} | Done | |
+| 3 | {title} | Skipped | {reason} |
+| 4 | {title} | Failed | {reason} |
 
 ### Summary
 - Completed: {N}/{total}
@@ -192,10 +192,10 @@ Design: {link to design doc, if exists}
 {What needs to be done next, if anything}
 ```
 
-## Правила
+## Rules
 
-- **Каждая задача ДОЛЖНА иметь критерий проверки** — без него задача не принимается
-- **Выполняй задачи по порядку** — уважай зависимости
-- **Если указан skill — ИСПОЛЬЗУЙ его** — не делай вручную то, что автоматизировано
-- **Всегда верифицируй после выполнения** — не отмечай задачу без проверки
-- **Держи план актуальным** — обновляй статусы задач в документе
+- **Every task MUST have verification criteria** — without them the task is not accepted
+- **Execute tasks in order** — respect dependencies
+- **If a skill is specified — USE it** — don't do manually what is automated
+- **Always verify after execution** — don't mark a task without checking
+- **Keep the plan up to date** — update task statuses in the document

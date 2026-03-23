@@ -1,141 +1,144 @@
 ---
 description: |
-  Архитектурное и code quality ревью Android кода. Двухпроходная проверка: (1) соответствие архитектурным правилам — 8 категорий, (2) качество кода — naming, duplication, error handling, security, performance, maintainability. Используй после реализации для проверки качества.
+  Architectural and code quality review of Android code. Two-pass check: (1) architectural rule compliance — 8 categories, (2) code quality — naming, duplication, error handling, security, performance, maintainability. Use after implementation to verify quality.
 
   <example>
-  Context: Пользователь создал новую фичу и хочет проверить качество
-  user: "сделай ревью фичи авторизации"
-  assistant: "Использую review skill для двухпроходной проверки auth feature."
+  Context: User created a new feature and wants to check its quality
+  user: "review the authorization feature"
+  assistant: "Using review skill for a two-pass check of the auth feature."
   </example>
 
   <example>
-  Context: Пользователь отрефакторил код и хочет убедиться в корректности
-  user: "проверь рефакторинг профиля"
-  assistant: "Использую review skill для проверки архитектуры и качества кода profile feature."
+  Context: User refactored code and wants to verify correctness
+  user: "check the profile refactoring"
+  assistant: "Using review skill to check architecture and code quality of the profile feature."
   </example>
 
   <example>
-  Context: Пользователь хочет проверить код перед коммитом
-  user: "проверь мой код перед коммитом"
-  assistant: "Использую review skill для полной проверки изменённых файлов."
+  Context: User wants to check code before committing
+  user: "check my code before commit"
+  assistant: "Using review skill for a full check of the modified files."
   </example>
 ---
 
 # Review — Architecture & Code Quality Review
 
-Ты проводишь комплексное ревью Android кода: архитектура + качество. Два прохода, единый вердикт.
+You perform a comprehensive review of Android code: architecture + quality. Two passes, one verdict.
 
-## Вход
+## Input
 
-Задача от пользователя: **$ARGUMENTS**
+Task from user: **$ARGUMENTS**
 
-## Шаг 1: Определи scope
+## Step 1: Determine the scope
 
-1. Получи от пользователя имя фичи или список файлов
-2. Если указана фича — найди все файлы через Glob:
+1. Get the feature name or file list from the user
+2. If a feature is specified — find all files via Glob:
    - `**/feature/{featureName}/**/*.kt`
    - `**/features/{featureName}/**/*.kt`
    - `**/{featureName}/**/*.kt`
-3. Если указаны конкретные файлы — используй их
+3. If specific files are specified — use them
 
-## Шаг 2: Прочитай правила
+## Step 2: Read the rules
 
-1. **Обязательно**: `rules/android-core.md` — основной источник архитектурных правил
-2. Запомни все правила — они являются эталоном для проверки
+1. **Required**: read `$CLAUDE_PLUGIN_ROOT/rules/android-core.md` — the primary source of architectural rules
+2. Memorize all rules — they serve as the reference for the check
 
-## Шаг 3: Прочитай все файлы scope
+## Step 3: Read all files in scope
 
-Прочитай каждый файл фичи через Read tool. Не пропускай ни одного файла.
+Read each feature file using the Read tool. Do not skip any file.
 
-## Шаг 4: Pass 1 — Architecture Compliance
+## Step 4: Pass 1 — Architecture Compliance
 
-Проверь каждый файл по всем 8 категориям. Для каждого нарушения фиксируй файл, строку, правило.
+Check each file against all 8 categories. For each violation, record the file, line, and rule.
 
-### Категория 1: Структура пакетов
-- [ ] Папки соответствуют стандарту (presentation/screen, presentation/view, presentation/viewmodel, domain/usecase, domain/repository, data/datasource, data/repository, di)
-- [ ] Каждый класс в правильной папке
-- [ ] Каждый класс в отдельном файле
+### Category 1: Package Structure
+- [ ] Folders match the standard (presentation/screen, presentation/view, presentation/viewmodel, domain/usecase, domain/repository, data/datasource, data/repository, di)
+- [ ] Each class is in the correct folder
+- [ ] Each class is in a separate file
 
-### Категория 2: Screen
-- [ ] Использует `collectAsStateWithLifecycle()` для state
-- [ ] Использует `CollectWithLifecycle {}` для actions
-- [ ] Нет `remember`, логики, вычислений в Screen
+### Category 2: Screen
+- [ ] Uses `collectAsStateWithLifecycle()` for state
+- [ ] Uses `CollectWithLifecycle {}` for actions
+- [ ] No `remember`, logic, or computations in Screen
+- [ ] No UI state in Screen (PagerState, ScrollState, LazyListState belong in View)
 
-### Категория 3: View
-- [ ] Сигнатура: `viewState` + `eventHandler` параметры
-- [ ] Нет `remember`, `LaunchedEffect`, `SideEffect`
-- [ ] Preview: `private fun {Feature}View_Preview` в `{App}Theme`
-- [ ] Нет прямого использования `MaterialTheme`
-- [ ] Нет хардкод цветов и типографики
+### Category 3: View
+- [ ] Signature: `viewState` + `eventHandler` parameters
+- [ ] No business logic `remember` or side-effects
+- [ ] UI state (`rememberPagerState`, `rememberScrollState`, `rememberLazyListState`) is ALLOWED in View — this is where it belongs
+- [ ] `LaunchedEffect` / `snapshotFlow` for syncing UI state (e.g. pager page changes) with eventHandler is ALLOWED in View
+- [ ] Preview: `private fun {Feature}View_Preview` in `{App}Theme`
+- [ ] No direct use of `MaterialTheme`
+- [ ] No hardcoded colors or typography
 
-### Категория 4: ViewModel
-- [ ] Наследует `BaseSharedViewModel`
-- [ ] `override fun handleEvent` для обработки событий
-- [ ] `updateState { it.copy(...) }` для обновления состояния
-- [ ] Нет Compose импортов (`androidx.compose.*`)
-- [ ] Нет прямых вызовов Repository — только через UseCase
+### Category 4: ViewModel
+- [ ] Extends `BaseSharedViewModel`
+- [ ] `override fun handleEvent` for event handling
+- [ ] `updateState { it.copy(...) }` for state updates
+- [ ] No Compose imports (`androidx.compose.*`)
+- [ ] No direct Repository calls — only through UseCase
 
-### Категория 5: ViewState / Event / Action
-- [ ] Каждый в отдельном файле
-- [ ] `ViewState` — data class с дефолтными значениями для всех полей
+### Category 5: ViewState / Event / Action
+- [ ] Each in a separate file
+- [ ] `ViewState` — data class with default values for all fields
 - [ ] `ViewEvent` — sealed class
 - [ ] `ViewAction` — sealed class
 
-### Категория 6: UseCase
-- [ ] Наследует `UseCase`
-- [ ] `suspend fun execute(...)` — НЕ `operator fun invoke`
-- [ ] Возвращает `Result<T>`
-- [ ] Зависит только от Repository (не от других UseCases, DataSources, etc.)
+### Category 6: UseCase
+- [ ] Extends `UseCase`
+- [ ] `suspend fun execute(...)` — NOT `operator fun invoke`
+- [ ] Returns `Result<T>`
+- [ ] Depends only on Repository (not on other UseCases, DataSources, etc.)
 
-### Категория 7: Repository
-- [ ] Есть интерфейс `I{Feature}Repository`
-- [ ] Реализация находится в `data/repository/`
-- [ ] Зависит только от DataSources (не от других Repositories, UseCases, etc.)
+### Category 7: Repository
+- [ ] Has an `I{Feature}Repository` interface
+- [ ] Implementation is in `data/repository/`
+- [ ] Depends only on DataSources (not on other Repositories, UseCases, etc.)
 
-### Категория 8: DI Module
-- [ ] Все зависимости фичи зарегистрированы (ViewModel, UseCases, Repository, DataSources)
-- [ ] Стиль соответствует фреймворку проекта (Koin `module {}` / Kodein `bind<>()`)
+### Category 8: DI Module
+- [ ] All feature dependencies are registered (ViewModel, UseCases, Repository, DataSources)
+- [ ] Style matches the project framework (Koin `module {}` / Kodein `bind<>()`)
 
-## Шаг 5: Pass 2 — Code Quality
+## Step 5: Pass 2 — Code Quality
 
-Проверь код по 6 категориям качества:
+Check the code across 6 quality categories:
 
 ### 1. Naming & Readability
-- Имена классов, функций, переменных понятны и следуют конвенциям Kotlin
-- Функции не слишком длинные (>30 строк — повод задуматься)
-- Код читается сверху вниз без необходимости прыгать по файлу
+- Class, function, and variable names are clear and follow Kotlin conventions
+- Functions are not too long (>30 lines is a reason to reconsider)
+- Code reads top-to-bottom without needing to jump around the file
 
 ### 2. Duplication (DRY)
-- Нет копипасты между файлами
-- Общая логика вынесена в переиспользуемые компоненты
-- Нет повторяющихся строк/блоков в View (вынести в отдельный Composable)
+- No copy-paste between files
+- Shared logic is extracted into reusable components
+- No repeating strings/blocks in View (extract into a separate Composable)
 
 ### 3. Error Handling
-- UseCase возвращает Result<T>, ошибки обрабатываются
-- ViewModel обрабатывает Result.failure и показывает ошибку пользователю
-- Нет проглоченных исключений (пустой catch)
-- Нет force-unwrap (`!!`) без обоснования
+- UseCase returns Result<T>, errors are handled
+- ViewModel handles Result.failure and shows an error to the user
+- No swallowed exceptions (empty catch)
+- No force-unwrap (`!!`) without justification
 
 ### 4. Security
-- Нет захардкоженных API ключей, паролей, секретов
-- Нет логирования чувствительных данных
-- Корректное хранение токенов (не в SharedPreferences без шифрования)
+- No hardcoded API keys, passwords, or secrets
+- No logging of sensitive data
+- Proper token storage (not in SharedPreferences without encryption)
 
 ### 5. Performance
-- Нет тяжёлых операций в Composable функциях
-- Нет лишних рекомпозиций (стабильные параметры, правильные ключи)
-- Нет блокирующих вызовов на Main thread
-- Корректное использование корутин (правильный dispatcher)
+- No heavy operations in Composable functions
+- No unnecessary recompositions (stable parameters, correct keys)
+- No blocking calls on the Main thread
+- Correct coroutine usage (proper dispatcher)
 
 ### 6. Maintainability
-- Код легко расширить новым функционалом
-- Зависимости инжектируются, а не создаются внутри
-- Нет God-объектов (класс делает слишком много)
-- Magic numbers/strings вынесены в константы
+- Code is easy to extend with new functionality
+- Dependencies are injected, not created internally
+- No God-objects (a class doing too much)
+- Magic numbers/strings are extracted into constants
 
-## Шаг 6: Формирование отчёта
+## Step 6: Report generation
 
-Объедини результаты обоих проходов в единый отчёт:
+Combine the results of both passes into a single report:
 
 ```
 ## Scope
@@ -145,8 +148,8 @@ Rules: rules/android-core.md [+ references if used]
 ## Verdict
 **PASS** / **FAIL**
 
-PASS — если нет Critical и Important issues.
-FAIL — если есть хотя бы один Critical или Important issue.
+PASS — if there are no Critical or Important issues.
+FAIL — if there is at least one Critical or Important issue.
 
 ## Issues
 {N}. [{Category}] {File.kt}:{line}
@@ -162,14 +165,14 @@ Files: {N}, Issues: {N} (Critical: {N}, Important: {N}, Suggestions: {N})
 ```
 
 ### Severity guidelines:
-- **Critical** — нарушение архитектуры, потенциальный краш, утечка данных
-- **Important** — отклонение от стандарта, потенциальная проблема
-- **Suggestion** — улучшение качества, не обязательно к исправлению
+- **Critical** — architectural violation, potential crash, data leak
+- **Important** — deviation from the standard, potential problem
+- **Suggestion** — quality improvement, not mandatory to fix
 
-## Правила
+## Rules
 
-- **Read-only** — НИКОГДА не модифицируй код. Только читай и анализируй.
-- **Конкретность** — указывай точные файлы и номера строк для каждого issue.
-- **Объективность** — проверяй по правилам проекта, а не по личным предпочтениям.
-- **Полнота** — проверь ВСЕ файлы scope, не пропускай ни одного.
-- **Баланс** — всегда отмечай сильные стороны кода, не только проблемы.
+- **Read-only** — NEVER modify code. Only read and analyze.
+- **Specificity** — specify exact files and line numbers for each issue.
+- **Objectivity** — check against project rules, not personal preferences.
+- **Completeness** — check ALL files in scope, do not skip any.
+- **Balance** — always note the strengths of the code, not just the problems.

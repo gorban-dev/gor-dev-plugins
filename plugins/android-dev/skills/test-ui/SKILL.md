@@ -1,121 +1,121 @@
 ---
 description: |
-  UI-тестирование Android фичи на устройстве через claude-in-mobile CLI. Читает код фичи, строит тест-план, запускает приложение, тестирует сценарии, делает скриншоты, репортит баги.
+  UI testing of an Android feature on a device via the claude-in-mobile CLI. Reads the feature code, builds a test plan, launches the app, tests scenarios, takes screenshots, and reports bugs.
 
   <example>
-  Context: Пользователь реализовал новую фичу и хочет протестировать на устройстве
-  user: "протестируй экран авторизации на устройстве"
-  assistant: "Использую test-ui skill для тестирования auth feature на устройстве через claude-in-mobile."
+  Context: User implemented a new feature and wants to test it on a device
+  user: "test the authorization screen on a device"
+  assistant: "Using test-ui skill to test the auth feature on a device via claude-in-mobile."
   </example>
 
   <example>
-  Context: Пользователь хочет проверить как выглядит экран
-  user: "проверь как выглядит экран профиля"
-  assistant: "Использую test-ui skill для визуальной проверки profile screen на устройстве."
+  Context: User wants to check how a screen looks
+  user: "check how the profile screen looks"
+  assistant: "Using test-ui skill for visual verification of the profile screen on a device."
   </example>
 ---
 
 # Test UI — Android UI Testing on Device
 
-Ты тестируешь Android UI на реальном устройстве/эмуляторе через `claude-in-mobile` CLI.
+You test Android UI on a real device/emulator via the `claude-in-mobile` CLI.
 
-## Вход
+## Input
 
-Задача от пользователя: **$ARGUMENTS**
+Task from user: **$ARGUMENTS**
 
-Необходимые параметры:
-- **featureName** — имя фичи для тестирования
-- **packageName** — пакет приложения (из CLAUDE.md или build.gradle)
-- **platform** — `android` (по умолчанию)
-- **navigationInstructions** — как добраться до тестируемого экрана (спросить у пользователя если не очевидно)
+Required parameters:
+- **featureName** — name of the feature to test
+- **packageName** — application package (from CLAUDE.md or build.gradle)
+- **platform** — `android` (default)
+- **navigationInstructions** — how to reach the screen under test (ask the user if not obvious)
 
-## Шаг 1: Читай код фичи
+## Step 1: Read the feature code
 
-1. Найди файлы фичи через Glob:
-   - `**/feature/{featureName}/**/View*.kt` или `**/{featureName}/*View.kt`
+1. Find the feature files via Glob:
+   - `**/feature/{featureName}/**/View*.kt` or `**/{featureName}/*View.kt`
    - `**/feature/{featureName}/**/ViewState*.kt`
    - `**/feature/{featureName}/**/ViewEvent*.kt`
-2. Прочитай `ViewState` — пойми какие данные отображаются на экране
-3. Прочитай `ViewEvent` — пойми какие действия пользователь может совершить
-4. Прочитай `View` — пойми структуру UI, все элементы, тексты, кнопки
+2. Read `ViewState` — understand what data is displayed on the screen
+3. Read `ViewEvent` — understand what actions the user can perform
+4. Read `View` — understand the UI structure, all elements, texts, buttons
 
-## Шаг 2: Построй тест-план
+## Step 2: Build a test plan
 
-На основе анализа кода составь список сценариев:
+Based on the code analysis, compile a list of scenarios:
 
-- **Rendering** — все элементы отображаются корректно
-- **Interaction** — все кнопки, поля ввода, свитчи работают
-- **Navigation** — переходы между экранами
-- **Data** — данные отображаются правильно, состояния loading/error/empty
-- **Edge cases** — пустые поля, длинные тексты, поворот экрана
+- **Rendering** — all elements are displayed correctly
+- **Interaction** — all buttons, input fields, switches work
+- **Navigation** — transitions between screens
+- **Data** — data is displayed correctly, loading/error/empty states
+- **Edge cases** — empty fields, long texts, screen rotation
 
-## Шаг 3: Запуск приложения
+## Step 3: Launch the application
 
-Используй `claude-in-mobile` CLI для работы с устройством.
+Use the `claude-in-mobile` CLI to interact with the device.
 
-### Доступные команды:
+### Available commands:
 
 ```bash
-# Запуск приложения
+# Launch the application
 claude-in-mobile launch --package {packageName} --platform android
 
-# Скриншот (ВСЕГДА с --compress)
+# Screenshot (ALWAYS with --compress)
 claude-in-mobile screenshot --platform android --compress
 
-# UI дерево (для поиска элементов)
+# UI tree (for finding elements)
 claude-in-mobile ui-dump --platform android
 
-# Тап по тексту
+# Tap by text
 claude-in-mobile tap-text --text "{text}" --platform android
 
-# Тап по координатам
+# Tap by coordinates
 claude-in-mobile tap --x {x} --y {y} --platform android
 
-# Ввод текста
+# Text input
 claude-in-mobile input --text "{text}" --platform android
 
-# Свайп
+# Swipe
 claude-in-mobile swipe --startX {x1} --startY {y1} --endX {x2} --endY {y2} --platform android
 
-# Нажатие кнопки (back, home, enter)
+# Key press (back, home, enter)
 claude-in-mobile key --key {keyName} --platform android
 
-# Ожидание (секунды)
+# Wait (seconds)
 claude-in-mobile wait --seconds {n} --platform android
 
-# Поиск элемента
+# Find element
 claude-in-mobile find --text "{text}" --platform android
 ```
 
-**ВАЖНО:** Для `screenshot` ВСЕГДА используй флаг `--compress` для уменьшения размера изображения.
+**IMPORTANT:** For `screenshot`, ALWAYS use the `--compress` flag to reduce image size.
 
-### Запуск:
-1. Запусти приложение: `claude-in-mobile launch --package {packageName} --platform android`
-2. Подожди загрузки: `claude-in-mobile wait --seconds 3 --platform android`
-3. Навигируй к тестируемому экрану по `navigationInstructions`
+### Launch sequence:
+1. Launch the app: `claude-in-mobile launch --package {packageName} --platform android`
+2. Wait for it to load: `claude-in-mobile wait --seconds 3 --platform android`
+3. Navigate to the screen under test using `navigationInstructions`
 
-## Шаг 4: Выполнение сценариев
+## Step 4: Execute scenarios
 
-Для каждого сценария из тест-плана:
+For each scenario from the test plan:
 
-1. **Скриншот ДО** — `claude-in-mobile screenshot --platform android --compress`
-2. **UI-dump** (если нужно найти элемент) — `claude-in-mobile ui-dump --platform android`
-3. **Действие** — tap, input, swipe и т.д.
-4. **Ожидание** — `claude-in-mobile wait --seconds 1-3 --platform android`
-5. **Скриншот ПОСЛЕ** — `claude-in-mobile screenshot --platform android --compress`
-6. **Анализ** — сравни ожидаемое и фактическое поведение
-7. **Фиксация результата** — PASS или FAIL с описанием
+1. **Screenshot BEFORE** — `claude-in-mobile screenshot --platform android --compress`
+2. **UI-dump** (if you need to find an element) — `claude-in-mobile ui-dump --platform android`
+3. **Action** — tap, input, swipe, etc.
+4. **Wait** — `claude-in-mobile wait --seconds 1-3 --platform android`
+5. **Screenshot AFTER** — `claude-in-mobile screenshot --platform android --compress`
+6. **Analysis** — compare expected and actual behavior
+7. **Record the result** — PASS or FAIL with a description
 
-### Правила тестирования:
-- Делай скриншот ПЕРЕД и ПОСЛЕ каждого действия
-- Используй `ui-dump` для поиска элементов, если `tap-text` не работает
-- Если элемент не найден — попробуй scroll/swipe
-- Если приложение упало — зафиксируй как Critical Crash
-- Для проверки длинных списков используй swipe вниз
+### Testing rules:
+- Take a screenshot BEFORE and AFTER each action
+- Use `ui-dump` to find elements if `tap-text` does not work
+- If an element is not found — try scroll/swipe
+- If the app crashed — record as Critical Crash
+- For checking long lists, use swipe down
 
-## Шаг 5: Отчёт
+## Step 5: Report
 
-Сформируй отчёт по результатам тестирования:
+Generate a report based on the test results:
 
 ```
 ## Test Report: {featureName}
@@ -143,22 +143,22 @@ claude-in-mobile find --text "{text}" --platform android
    Screenshot: {reference to screenshot}
 
 ### Issue Categories:
-- **[Rendering]** — элемент не отображается, неправильный размер/цвет/позиция
-- **[Interaction]** — кнопка не реагирует, неправильное поведение при тапе
-- **[Navigation]** — неправильный переход, отсутствует back navigation
-- **[Data]** — неправильные данные, не обновляется, пустое состояние не обработано
-- **[Accessibility]** — нет content description, слишком маленький touch target
-- **[Crash]** — приложение упало
+- **[Rendering]** — element not displayed, incorrect size/color/position
+- **[Interaction]** — button not responding, incorrect behavior on tap
+- **[Navigation]** — incorrect transition, missing back navigation
+- **[Data]** — incorrect data, not updating, empty state not handled
+- **[Accessibility]** — no content description, touch target too small
+- **[Crash]** — application crashed
 
 ### Summary
 Scenarios: {total} (Passed: {N}, Failed: {N})
 Issues: {N} (Critical: {N}, Major: {N}, Minor: {N})
 ```
 
-## Правила
+## Rules
 
-- **ВСЕГДА используй `--compress`** при вызове `screenshot`
-- **ВСЕГДА делай скриншот до и после** каждого действия
-- **Используй `ui-dump`** если не можешь найти элемент по тексту
-- **Фиксируй ВСЕ отклонения** от ожидаемого поведения
-- **Не исправляй код** — только тестируй и репортишь
+- **ALWAYS use `--compress`** when calling `screenshot`
+- **ALWAYS take a screenshot before and after** each action
+- **Use `ui-dump`** if you cannot find an element by text
+- **Record ALL deviations** from expected behavior
+- **Do not fix code** — only test and report

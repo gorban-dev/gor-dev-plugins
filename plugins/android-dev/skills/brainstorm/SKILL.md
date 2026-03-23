@@ -1,140 +1,142 @@
 ---
 description: |
-  Исследование и дизайн решения перед реализацией. Анализирует контекст, задаёт вопросы, предлагает 2-3 подхода с trade-offs, пишет спецификацию. Для нетривиальных задач, требующих обдумывания перед кодом.
+  Research and design a solution before implementation. Analyzes context, asks questions, proposes 2-3 approaches with trade-offs, writes a specification. For non-trivial tasks that require thinking before coding.
 
   <example>
-  Context: Пользователь хочет обсудить подход к реализации
-  user: "как лучше реализовать интеграцию с платёжной системой?"
-  assistant: "Использую brainstorm skill для исследования подходов."
+  Context: User wants to discuss an implementation approach
+  user: "what's the best way to implement payment system integration?"
+  assistant: "Using brainstorm skill to research approaches."
   </example>
 
   <example>
-  Context: Пользователь хочет обдумать архитектуру
-  user: "давай подумаем как сделать кеширование"
-  assistant: "Запускаю brainstorm для анализа вариантов кеширования."
+  Context: User wants to think through architecture
+  user: "let's think about how to implement caching"
+  assistant: "Running brainstorm to analyze caching options."
   </example>
 
   <example>
-  Context: Сложная фича с неочевидным решением
-  user: "нужно добавить офлайн-режим, с чего начать?"
-  assistant: "Начну с brainstorm — исследую текущую архитектуру и предложу варианты."
+  Context: Complex feature with a non-obvious solution
+  user: "need to add offline mode, where to start?"
+  assistant: "Starting with brainstorm — will research current architecture and propose options."
   </example>
 ---
 
-# Brainstorm — Исследование и дизайн решения
+# Brainstorm — Research and Solution Design
 
-Ты помогаешь продумать решение ДО написания кода. Твоя задача — исследовать проблему, предложить подходы и создать спецификацию.
+You help think through a solution BEFORE writing code. Your goal is to research the problem, propose approaches, and create a specification.
 
-**НЕ РЕАЛИЗУЙ НИЧЕГО ВО ВРЕМЯ BRAINSTORM. Результат — спецификация, не код.**
+**DO NOT IMPLEMENT ANYTHING DURING BRAINSTORM. The outcome is a specification, not code.**
 
-## Вход
+## Input
 
-Тема для обсуждения: **$ARGUMENTS**
+Topic for discussion: **$ARGUMENTS**
 
 ## Workflow
 
-### Фаза 1: Исследование (Investigate)
+### Phase 1: Investigate
 
-Прежде чем предлагать что-либо — разберись в текущем состоянии:
+Before proposing anything — understand the current state:
 
-1. **Прочитай код** — исследуй области кодовой базы, связанные с темой
-2. **Запусти, не только читай** — не предполагай что код работает по чтению. Запусти тесты, проверь поведение
-3. **Определи ограничения** — какие фреймворки, паттерны и конвенции уже используются
-4. **Изучи документацию** — если нужно, используй `google-dev-knowledge:google-dev-docs` для изучения API
-5. **Отметь неизвестное** — всё неопределённое маркируй ⚠️. Если нужен spike — скажи явно
+1. **Read the code** — explore areas of the codebase related to the topic
+2. **Run, don't just read** — don't assume code works by reading it. Run tests, verify behavior
+3. **Identify constraints** — what frameworks, patterns, and conventions are already in use
+4. **Study documentation** — if needed, use `google-dev-knowledge:google-dev-docs` to study APIs
+5. **Flag unknowns** — mark everything uncertain with a warning. If a spike is needed — say so explicitly
 
-### Фаза 2: Определение проблемы (Problem)
+### Phase 2: Problem Definition
 
-Сформулируй проблему чётко:
-- Что именно нужно решить?
-- Какое поведение докажет что решение работает? (Acceptance Proof)
-- Что НЕ входит в scope?
+Formulate the problem clearly:
+- What exactly needs to be solved?
+- What behavior proves the solution works? (Acceptance Proof)
+- What is NOT in scope?
 
-### Фаза 3: Уточнение (Clarify)
+### Phase 3: Clarify
 
-Задай пользователю **2-3 целевых вопроса** (по одному за раз):
-- **Scope**: что включаем, что явно исключаем?
-- **Ограничения**: требования к производительности, совместимости, срокам?
-- **Предпочтения**: какие технологии/паттерны предпочитает или хочет избежать?
+Ask the user **2-3 targeted questions** using the **AskUserQuestion tool** (one at a time). This is mandatory — DO NOT write questions as plain text, ALWAYS use AskUserQuestion with answer options where possible.
 
-### Фаза 4: Предложение подходов (Options)
+Topics to clarify:
+- **Scope**: what do we include, what do we explicitly exclude?
+- **Constraints**: performance, compatibility, or timeline requirements?
+- **Preferences**: which technologies/patterns does the user prefer or want to avoid?
 
-Представь **2-3 подхода**, каждый:
+### Phase 4: Propose Approaches (Options)
+
+Present **2-3 approaches**, each:
 
 ```
-### Подход {N}: {название}
+### Approach {N}: {name}
 
-**Суть**: {1-2 предложения}
+**Summary**: {1-2 sentences}
 
-**Как работает**:
-- {ключевая деталь 1}
-- {ключевая деталь 2}
-- {ключевая деталь 3}
+**How it works**:
+- {key detail 1}
+- {key detail 2}
+- {key detail 3}
 
-**Плюсы**:
-- {преимущество 1}
-- {преимущество 2}
+**Pros**:
+- {advantage 1}
+- {advantage 2}
 
-**Минусы**:
-- {недостаток 1}
-- {недостаток 2}
+**Cons**:
+- {disadvantage 1}
+- {disadvantage 2}
 
-**Сложность**: Низкая / Средняя / Высокая
+**Complexity**: Low / Medium / High
 
-**Когда выбрать**: {сценарий когда этот подход лучше}
+**When to choose**: {scenario when this approach is best}
 ```
 
-Заверши чёткой рекомендацией и обоснованием.
+Finish with a clear recommendation and rationale.
 
-Подходы должны быть **принципиально разными**, а не вариациями одной идеи.
+Approaches must be **fundamentally different**, not variations of the same idea.
 
-### Фаза 5: Спецификация (Recommend + Slice)
+### Phase 5: Specification (Recommend + Slice)
 
-После выбора подхода пользователем — создай документ:
+After the user selects an approach — create a document:
 
-1. Сохрани в `docs/designs/{feature-name}.md`
-2. Формат:
+1. Save to `docs/designs/{feature-name}.md`
+2. Format:
 
 ```markdown
 # Design: {feature-name}
 
-Дата: {YYYY-MM-DD}
+Date: {YYYY-MM-DD}
 
-## Постановка проблемы
-{Что решаем и почему}
+## Problem Statement
+{What we're solving and why}
 
-## Выбранный подход
-{Описание выбранного подхода}
+## Chosen Approach
+{Description of the selected approach}
 
-## Архитектура
-{Как взаимодействуют компоненты, поток данных, ключевые абстракции}
+## Architecture
+{How components interact, data flow, key abstractions}
 
-## Ключевые решения
-- {Решение 1}: {обоснование}
-- {Решение 2}: {обоснование}
+## Key Decisions
+- {Decision 1}: {rationale}
+- {Decision 2}: {rationale}
 
-## Затронутые файлы
-- Создать: {список новых файлов}
-- Изменить: {список изменяемых файлов}
+## Affected Files
+- Create: {list of new files}
+- Modify: {list of files to change}
 
-## Delivery Slices (вертикальные срезы)
-- Slice 1: {полный путь через все слои UI → logic → data}
-- Slice 2: {следующий срез}
+## Delivery Slices (vertical slices)
+- Slice 1: {full path through all layers UI -> logic -> data}
+- Slice 2: {next slice}
 
-## Открытые вопросы
-{Нерешённое — помечено ⚠️}
+## Open Questions
+{Unresolved items — marked with a warning}
 ```
 
-### Фаза 6: Переход
+### Phase 6: Transition
 
-После утверждения спецификации:
-- "Спецификация утверждена. Создать план реализации через `plan` skill?"
+After the specification is approved:
+- "Specification approved. Create an implementation plan via `plan` skill?"
 
-## Правила
+## Rules
 
-- **НЕ РЕАЛИЗУЙ** ничего во время brainstorm — результат только спецификация
-- **НЕ НАЧИНАЙ РЕАЛИЗАЦИЮ ДО СОГЛАСОВАНИЯ** — "NO IMPLEMENTATION BEFORE ALIGNMENT"
-- Если задача тривиальная (правка одного файла) — скажи об этом и пропусти полный процесс
-- Все предложения основаны на реальном коде проекта, а не абстрактные
-- Подходы честно показывают trade-offs — у каждого есть минусы
-- Думай **вертикальными срезами**: каждый инкремент работает end-to-end через все слои
+- **DO NOT IMPLEMENT** anything during brainstorm — the outcome is only a specification
+- **DO NOT START IMPLEMENTATION BEFORE ALIGNMENT** — "NO IMPLEMENTATION BEFORE ALIGNMENT"
+- If the task is trivial (editing a single file) — say so and skip the full process
+- All proposals are based on actual project code, not abstract
+- Approaches honestly show trade-offs — each one has downsides
+- Think in **vertical slices**: each increment works end-to-end through all layers
