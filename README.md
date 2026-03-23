@@ -1,6 +1,6 @@
 # gor-dev-plugins
 
-Claude Code plugin marketplace for Android development with unified workflow.
+Claude Code plugin marketplace for Android development.
 
 ## Installation
 
@@ -10,23 +10,53 @@ Claude Code plugin marketplace for Android development with unified workflow.
 
 ## Available Plugins
 
-| Plugin | Description | Details | Install |
-|--------|-------------|---------|---------|
-| **dev-workflow** | Unified development workflow: design → planning → execution → verification → review. Works on top of any domain-specific plugins | [README](https://github.com/gorban-dev/gor-dev-plugins/tree/main/plugins/dev-workflow) | `/plugin install dev-workflow@gor-dev-plugins` |
-| **android-arch** | Create, modify and refactor Android features following strict architecture rules (Compose, Screen/View, Clean Architecture, Koin/Kodein) | [README](https://github.com/gorban-dev/gor-dev-plugins/tree/main/plugins/android-arch) | `/plugin install android-arch@gor-dev-plugins` |
-| **swagger-android** | Generate Android Kotlin data models from Swagger/OpenAPI specs | [README](https://github.com/gorban-dev/gor-dev-plugins/tree/main/plugins/swagger-android) | `/plugin install swagger-android@gor-dev-plugins` |
-| **yandex-tracker** | Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning | [README](https://github.com/gorban-dev/gor-dev-plugins/tree/main/plugins/yandex-tracker) | `/plugin install yandex-tracker@gor-dev-plugins` |
-| **google-dev-knowledge** | Real-time access to official Google developer docs (Android, Firebase, Cloud, Flutter, TensorFlow, Google AI, etc.) | [README](https://github.com/gorban-dev/gor-dev-plugins/tree/main/plugins/google-dev-knowledge) | `/plugin install google-dev-knowledge@gor-dev-plugins` |
+| Plugin | Description | Install |
+|--------|-------------|---------|
+| **android-dev** | Unified Android developer: one proactive agent for the full cycle — brainstorm → plan → implement → review → test → verify | `/plugin install android-dev@gor-dev-plugins` |
+| **swagger-android** | Generate Android Kotlin data models from Swagger/OpenAPI specs | `/plugin install swagger-android@gor-dev-plugins` |
+| **yandex-tracker** | Yandex Tracker MCP server for issue management, time tracking, comments, workflows, and sprint planning | `/plugin install yandex-tracker@gor-dev-plugins` |
+| **google-dev-knowledge** | Real-time access to official Google developer docs (Android, Firebase, Cloud, Flutter, TensorFlow, Google AI, etc.) | `/plugin install google-dev-knowledge@gor-dev-plugins` |
 
-## Workflow
+## android-dev (v2.0.0)
 
-The `dev-workflow` plugin provides a process layer that orchestrates work across all domain plugins:
+Один агент заменяет 6 отдельных агентов и 14 скилов из предыдущих `android-arch` + `dev-workflow`.
+
+### Agent
+
+**android-dev** (model: opus) — senior Android developer. Автоматически определяет нужный skill и проактивно запускает полный цикл без лишних вопросов.
+
+### Skills
+
+| Skill | Description |
+|-------|-------------|
+| `brainstorm` | Исследование и дизайн решения перед реализацией. 2-3 подхода с trade-offs |
+| `plan` | Создание гранулярного плана (задачи по 2-5 мин) и пошаговое выполнение |
+| `implement` | Реализация: создание фичи с нуля, доработка существующей, рефакторинг к стандарту |
+| `debug` | Систематическая отладка: root cause → hypothesis → fix → verify |
+| `tdd` | Test-driven development: RED → GREEN → REFACTOR |
+| `review` | Двухпроходное ревью: архитектура (8 категорий) + code quality (6 категорий) |
+| `test-ui` | UI-тестирование на устройстве через claude-in-mobile CLI |
+| `verify` | Evidence-based проверка завершённости — без "should work" |
+
+### Proactive Workflow
 
 ```
-design → plan-task → execute-plan → verify → code-review
+implement → review (auto) → fix if FAIL (max 3) → test-ui (auto) → verify (auto) → report
 ```
 
-Each step is optional and independently usable. During plan execution, domain-specific skills are invoked automatically (e.g., `android-arch:create-feature`, `swagger-android` model generation).
+Для сложных задач:
+```
+brainstorm → plan → implement → review → test-ui → verify
+```
+
+### Architecture
+
+Строгие правила для Jetpack Compose + Clean Architecture:
+- **Screen** — тонкий адаптер (collectAsStateWithLifecycle)
+- **View** — чистый UI, без логики и side-effects
+- **ViewModel** — BaseSharedViewModel, handleEvent(), updateState
+- **UseCase** — suspend fun execute(), returns Result<T>
+- **Repository** — interface + impl, depends only on DataSources
 
 ## Project Setup
 
@@ -43,10 +73,22 @@ Add to your project's `.claude/settings.json`:
     }
   },
   "enabledPlugins": {
-    "dev-workflow@gor-dev-plugins": true,
-    "android-arch@gor-dev-plugins": true,
+    "android-dev@gor-dev-plugins": true,
     "swagger-android@gor-dev-plugins": true,
-    "yandex-tracker@gor-dev-plugins": true
+    "yandex-tracker@gor-dev-plugins": true,
+    "google-dev-knowledge@gor-dev-plugins": true
   }
 }
+```
+
+## Migration from v1.x
+
+If you were using `android-arch` and `dev-workflow`, replace them with `android-dev`:
+
+```diff
+  "enabledPlugins": {
+-   "dev-workflow@gor-dev-plugins": true,
+-   "android-arch@gor-dev-plugins": true,
++   "android-dev@gor-dev-plugins": true,
+  }
 ```
