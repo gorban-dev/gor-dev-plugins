@@ -136,8 +136,8 @@ jobs:
           print(f'All {len(files)} agents checked ({len(warnings)} warnings)')
           "
 
-  dev-workflow-tests:
-    name: dev-workflow plugin tests
+  android-dev-tests:
+    name: android-dev plugin tests
     runs-on: ubuntu-latest
 
     steps:
@@ -152,5 +152,5 @@ jobs:
         run: pip install pytest pyyaml
 
       - name: Run tests
-        working-directory: plugins/dev-workflow
+        working-directory: plugins/android-dev
         run: python -m pytest tests/ -v
