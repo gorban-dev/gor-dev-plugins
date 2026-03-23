@@ -193,6 +193,20 @@ class TestHooks:
         assert "hooks" in data
         assert "SessionStart" in data["hooks"]
 
+    def test_hooks_json_correct_nesting(self):
+        """Hook entries must have matcher group → hooks array nesting."""
+        path = PLUGIN_ROOT / "hooks" / "hooks.json"
+        data = json.loads(path.read_text())
+        for event, entries in data["hooks"].items():
+            assert isinstance(entries, list), f"{event} must be an array"
+            for i, entry in enumerate(entries):
+                assert "hooks" in entry, (
+                    f"{event}[{i}] must have 'hooks' array (correct nesting)"
+                )
+                assert isinstance(entry["hooks"], list), (
+                    f"{event}[{i}].hooks must be an array"
+                )
+
     def test_session_start_script_exists(self):
         path = PLUGIN_ROOT / "hooks" / "session-start.sh"
         assert path.exists(), "session-start.sh must exist"
