@@ -125,11 +125,11 @@ class TestExampleKotlinPatterns:
             "ExampleScreen must use collectAsStateWithLifecycle"
         )
 
-    def test_screen_handles_actions(self):
+    def test_screen_uses_collect_with_lifecycle(self):
         path = PLUGIN_ROOT / "skills" / "implement" / "examples" / "ExampleScreen.kt"
         content = path.read_text()
-        assert "viewAction" in content or "CollectWithLifecycle" in content, (
-            "ExampleScreen must handle actions (viewActions or CollectWithLifecycle)"
+        assert "CollectWithLifecycle" in content, (
+            "ExampleScreen must use CollectWithLifecycle for actions"
         )
 
     def test_view_has_preview(self):

@@ -40,9 +40,8 @@ description: |
 
 ## Шаг 2: Прочитай правила
 
-1. **Обязательно**: `rules/android-core.md`
-2. **Если доступны**: references из skill implement (`references/architecture.md`, `references/base-viewmodel.md`, `references/theme-system.md`)
-3. Запомни все правила — они являются эталоном для проверки
+1. **Обязательно**: `rules/android-core.md` — основной источник архитектурных правил
+2. Запомни все правила — они являются эталоном для проверки
 
 ## Шаг 3: Прочитай все файлы scope
 
