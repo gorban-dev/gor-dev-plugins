@@ -1,3 +1,8 @@
+---
+name: swagger-kotlin-conventions
+description: Rules and conventions for generating Android Kotlin data models, domain models, enums and mappers from Swagger/OpenAPI specifications. Used by the swagger-model-generator agent.
+---
+
 # Skill: swagger-kotlin-conventions
 
 Rules for generating Android Kotlin models from Swagger/OpenAPI data.

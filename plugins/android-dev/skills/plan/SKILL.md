@@ -1,4 +1,5 @@
 ---
+name: plan
 description: |
   Create and execute an implementation plan. Two modes: creating a granular plan (tasks of 2-5 minutes each) and step-by-step execution. Use for planning complex tasks or after brainstorm.
 

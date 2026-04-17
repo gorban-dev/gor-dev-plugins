@@ -1,0 +1,26 @@
+{
+  "name": "google-dev-knowledge",
+  "displayName": "Google Dev Knowledge",
+  "description": "Google Developer Knowledge API: real-time access to official Google docs (Android, Firebase, Cloud, Flutter, TensorFlow, Google AI)",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com"
+  },
+  "homepage": "https://github.com/gorban-dev/gor-dev-plugins",
+  "repository": "https://github.com/gorban-dev/gor-dev-plugins",
+  "license": "MIT",
+  "keywords": [
+    "google",
+    "documentation",
+    "android",
+    "firebase",
+    "cloud",
+    "flutter",
+    "tensorflow",
+    "google-ai",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcp": "./.mcp.json"
+}

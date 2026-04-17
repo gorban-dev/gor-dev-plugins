@@ -1,0 +1,25 @@
+{
+  "name": "kmp-migrator-superpowers",
+  "description": "Bidirectional KMM ↔ iOS migration toolkit built on Superpowers methodology — TDD, brainstorming, evidence-based verification, business-logic fidelity",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.xak@gmail.com"
+  },
+  "homepage": "https://github.com/gorban-dev/kmp-migrator-superpowers",
+  "repository": "https://github.com/gorban-dev/kmp-migrator-superpowers",
+  "license": "MIT",
+  "keywords": [
+    "kmm",
+    "kmp",
+    "ios",
+    "android",
+    "migration",
+    "kotlin",
+    "swift",
+    "skills",
+    "tdd",
+    "debugging",
+    "workflows"
+  ]
+}

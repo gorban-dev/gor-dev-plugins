@@ -1,4 +1,5 @@
 ---
+name: tdd
 description: |
   Test-Driven Development workflow: RED → GREEN → REFACTOR. Write a failing test first, then write minimal code to pass it, then refactor while keeping tests green. Best for business logic (UseCases, mappers, utils, repositories), not for UI code.
 

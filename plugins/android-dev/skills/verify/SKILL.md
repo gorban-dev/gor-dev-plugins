@@ -1,4 +1,5 @@
 ---
+name: verify
 description: |
   Verify that work is truly complete before claiming it's done. Requires fresh evidence for every completion claim — no assumptions, no "should work". Use when finishing a task, after executing a plan, before reporting completion, or when the user asks to verify results.
 

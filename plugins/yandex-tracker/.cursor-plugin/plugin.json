@@ -1,0 +1,24 @@
+{
+  "name": "yandex-tracker",
+  "displayName": "Yandex Tracker",
+  "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent, workflow skills",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com"
+  },
+  "homepage": "https://github.com/gorban-dev/gor-dev-plugins",
+  "repository": "https://github.com/gorban-dev/gor-dev-plugins",
+  "license": "MIT",
+  "keywords": [
+    "yandex-tracker",
+    "issue-tracking",
+    "project-management",
+    "sprint-planning",
+    "time-tracking",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "mcp": "./.mcp.json"
+}

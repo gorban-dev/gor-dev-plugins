@@ -1,4 +1,5 @@
 ---
+name: test-ui
 description: |
   UI testing of an Android feature on a device via the claude-in-mobile CLI. Reads the feature code, builds a test plan, launches the app, tests scenarios, takes screenshots, and reports bugs.
 

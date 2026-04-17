@@ -1,0 +1,24 @@
+{
+  "name": "android-dev",
+  "displayName": "Android Dev",
+  "description": "Unified Android developer: brainstorm → plan → implement → review → test → verify. One proactive agent for all Android development tasks.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com"
+  },
+  "homepage": "https://github.com/gorban-dev/gor-dev-plugins",
+  "repository": "https://github.com/gorban-dev/gor-dev-plugins",
+  "license": "MIT",
+  "keywords": [
+    "android",
+    "kotlin",
+    "compose",
+    "agent",
+    "skills",
+    "tdd",
+    "review"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}

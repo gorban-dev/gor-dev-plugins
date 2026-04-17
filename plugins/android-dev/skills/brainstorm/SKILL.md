@@ -1,4 +1,5 @@
 ---
+name: brainstorm
 description: |
   Research and design a solution before implementation. Analyzes context, asks questions, proposes 2-3 approaches with trade-offs, writes a specification. For non-trivial tasks that require thinking before coding.
 

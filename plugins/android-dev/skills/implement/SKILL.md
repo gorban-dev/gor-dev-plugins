@@ -1,4 +1,5 @@
 ---
+name: implement
 description: |
   Android feature implementation: creating from scratch, extending existing features, or refactoring to match the architectural standard. Automatically determines the working mode based on context. Use for any tasks involving writing/modifying Android code.
 

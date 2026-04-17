@@ -1,8 +1,10 @@
 {
-  "yandex-tracker": {
-    "command": "node",
-    "args": [
-      "${CLAUDE_PLUGIN_ROOT}/dist/bundle.js"
-    ]
+  "mcpServers": {
+    "yandex-tracker": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/dist/bundle.js"
+      ]
+    }
   }
 }

@@ -1,0 +1,24 @@
+{
+  "name": "swagger-android",
+  "displayName": "Swagger Android",
+  "description": "Generate Android Kotlin data models from Swagger/OpenAPI specifications",
+  "version": "1.2.0",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com"
+  },
+  "homepage": "https://github.com/gorban-dev/gor-dev-plugins",
+  "repository": "https://github.com/gorban-dev/gor-dev-plugins",
+  "license": "MIT",
+  "keywords": [
+    "android",
+    "kotlin",
+    "swagger",
+    "openapi",
+    "models",
+    "codegen",
+    "kotlinx-serialization"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}

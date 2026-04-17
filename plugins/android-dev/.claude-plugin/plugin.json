@@ -1,5 +1,7 @@
 {
   "name": "android-dev",
   "version": "2.0.0",
-  "description": "Unified Android developer: brainstorm → plan → implement → review → test → verify. One proactive agent for all Android development tasks."
+  "description": "Unified Android developer: brainstorm → plan → implement → review → test → verify. One proactive agent for all Android development tasks.",
+  "license": "MIT",
+  "keywords": ["android", "kotlin", "compose", "clean-architecture", "tdd", "developer-agent"]
 }

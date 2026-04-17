@@ -1,0 +1,6 @@
+{
+  "name": "kmp-migrator-superpowers",
+  "description": "Bidirectional KMM ↔ iOS migration toolkit built on Superpowers methodology",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md"
+}

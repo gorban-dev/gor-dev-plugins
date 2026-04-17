@@ -1,4 +1,5 @@
 ---
+name: debug
 description: |
   Systematic debugging methodology with 4 phases: root cause investigation, pattern analysis, hypothesis testing, and targeted fix. Prevents shotgun debugging and ensures fixes address causes, not symptoms. Use when something is broken, a bug is reported, an error occurs, or after 2+ failed fix attempts.
 

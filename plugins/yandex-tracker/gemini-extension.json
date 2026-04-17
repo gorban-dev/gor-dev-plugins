@@ -1,0 +1,16 @@
+{
+  "name": "yandex-tracker",
+  "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent, workflow skills",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "yandex-tracker": {
+      "command": "node",
+      "args": ["${EXTENSION_ROOT}/dist/bundle.js"],
+      "env": {
+        "YANDEX_TRACKER_TOKEN": "${YANDEX_TRACKER_TOKEN}",
+        "YANDEX_TRACKER_ORG_ID": "${YANDEX_TRACKER_ORG_ID}"
+      }
+    }
+  }
+}

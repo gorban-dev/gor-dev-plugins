@@ -1,0 +1,6 @@
+{
+  "name": "swagger-android",
+  "description": "Generate Android Kotlin data models from Swagger/OpenAPI specifications",
+  "version": "1.2.0",
+  "contextFileName": "GEMINI.md"
+}

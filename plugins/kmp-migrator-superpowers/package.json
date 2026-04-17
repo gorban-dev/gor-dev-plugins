@@ -1,0 +1,6 @@
+{
+  "name": "kmp-migrator-superpowers",
+  "version": "1.0.0",
+  "type": "module",
+  "main": ".opencode/plugins/kmp-migrator-superpowers.js"
+}

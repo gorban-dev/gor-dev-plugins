@@ -1,4 +1,5 @@
 ---
+name: review
 description: |
   Architectural and code quality review of Android code. Two-pass check: (1) architectural rule compliance — 8 categories, (2) code quality — naming, duplication, error handling, security, performance, maintainability. Use after implementation to verify quality.
 

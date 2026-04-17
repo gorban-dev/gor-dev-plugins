@@ -1,9 +1,11 @@
 {
-  "google-dev-knowledge": {
-    "type": "http",
-    "url": "https://developerknowledge.googleapis.com/mcp",
-    "headers": {
-      "X-Goog-Api-Key": "${GOOGLE_DEV_API_KEY}"
+  "mcpServers": {
+    "google-dev-knowledge": {
+      "type": "http",
+      "url": "https://developerknowledge.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "${GOOGLE_DEV_API_KEY}"
+      }
     }
   }
 }

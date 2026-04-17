@@ -1,0 +1,14 @@
+{
+  "name": "google-dev-knowledge",
+  "description": "Google Developer Knowledge API: real-time access to official Google docs",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "google-dev-knowledge": {
+      "httpUrl": "https://developerknowledge.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "${GOOGLE_DEV_API_KEY}"
+      }
+    }
+  }
+}
