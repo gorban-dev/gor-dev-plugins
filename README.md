@@ -1,8 +1,8 @@
 <div align="center">
 
-# gor-dev-plugins
+# Mobile Dev Toolkit
 
-**Multi-platform plugin marketplace for Android, KMM and iOS development**
+**Plugins for Android, KMM and iOS development**
 
 [![Marketplace](https://img.shields.io/badge/marketplace-v2.1.0-blue?style=flat-square)](https://github.com/gorban-dev/gor-dev-plugins/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
