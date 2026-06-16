@@ -171,14 +171,14 @@ Install as a Claude Code plugin. The bundled MCP server (`dist/bundle.js`) is in
 
 The Codex plugin manifest is included at `.codex-plugin/plugin.json`, and the repo-local marketplace entry is included at `.agents/plugins/marketplace.json`.
 
-From a clone of this repository:
+Install directly from GitHub:
 
 ```bash
-npm --prefix plugins/yandex-tracker install
-npm --prefix plugins/yandex-tracker run build
-codex plugin marketplace add /path/to/gor-dev-plugins
+codex plugin marketplace add gorban-dev/gor-dev-plugins --ref main
 codex plugin add yandex-tracker@gor-dev-plugins
 ```
+
+The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or local build step is required for normal installation.
 
 Start a new Codex thread after installation so the plugin skill and MCP tools are loaded. The `agents/tracker-manager.md` agent is Claude Code-only; in Codex, use the `yandex-tracker` skill and MCP tools directly.
 

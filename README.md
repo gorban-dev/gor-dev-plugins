@@ -59,6 +59,17 @@ Or pin everything in your project's `.claude/settings.json`:
 }
 ```
 
+### Codex
+
+Add the marketplace directly from GitHub and install the plugin you need:
+
+```bash
+codex plugin marketplace add gorban-dev/gor-dev-plugins --ref main
+codex plugin add yandex-tracker@gor-dev-plugins
+```
+
+Plugins that ship bundled MCP servers, such as `yandex-tracker`, include their built `dist/` assets in the repository, so normal installation does not require `npm install` or a local build.
+
 ### Other platforms
 
 Each plugin ships per-platform manifests and a dedicated `INSTALL.md` inside its directory:

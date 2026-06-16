@@ -4,34 +4,21 @@
 
 - Git
 - OpenAI Codex CLI
-- Node.js 18+
 - Yandex Tracker OAuth token and org ID
 
 ## Installation
 
-1. **Clone the marketplace repo** (if not already cloned):
+1. **Register the GitHub marketplace with Codex:**
    ```bash
-   git clone https://github.com/gorban-dev/gor-dev-plugins.git ~/.codex/gor-dev-plugins
+   codex plugin marketplace add gorban-dev/gor-dev-plugins --ref main
    ```
 
-2. **Build the bundled MCP server:**
-   ```bash
-   cd ~/.codex/gor-dev-plugins/plugins/yandex-tracker
-   npm install
-   npm run build
-   ```
-
-3. **Register this repo marketplace with Codex:**
-   ```bash
-   codex plugin marketplace add ~/.codex/gor-dev-plugins
-   ```
-
-4. **Install the plugin from the marketplace:**
+2. **Install the plugin from the marketplace:**
    ```bash
    codex plugin add yandex-tracker@gor-dev-plugins
    ```
 
-5. **Provide Yandex Tracker credentials** in the environment that launches Codex:
+3. **Provide Yandex Tracker credentials** in the environment that launches Codex:
    ```bash
    export YANDEX_TRACKER_TOKEN="your_oauth_token_here"
    export YANDEX_TRACKER_ORG_ID="your_org_id_here"
@@ -43,7 +30,7 @@
    export YANDEX_TRACKER_CLOUD_ORG_ID="your_cloud_org_id_here"
    ```
 
-6. **Start a new Codex thread** so the plugin skills and MCP tools are loaded.
+4. **Start a new Codex thread** so the plugin skills and MCP tools are loaded.
 
 ## Notes
 
@@ -51,12 +38,12 @@
 - The Codex plugin manifest is in `.codex-plugin/plugin.json`.
 - The Codex marketplace entry is in `.agents/plugins/marketplace.json`.
 - The MCP server uses `.mcp.json` with paths relative to the plugin root.
+- The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or local build step is required for normal installation.
 
 ## Updating
 
 ```bash
-cd ~/.codex/gor-dev-plugins && git pull
-cd plugins/yandex-tracker && npm install && npm run build
+codex plugin marketplace add gorban-dev/gor-dev-plugins --ref main
 codex plugin add yandex-tracker@gor-dev-plugins
 ```
 
