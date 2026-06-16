@@ -12,6 +12,8 @@
     "skills",
     "agents",
     ".claude-plugin",
+    ".codex-plugin",
+    ".mcp.json",
     "README.md",
     "LICENSE"
   ],

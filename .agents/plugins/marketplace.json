@@ -1,0 +1,20 @@
+{
+  "name": "gor-dev-plugins",
+  "interface": {
+    "displayName": "Gor Dev Plugins"
+  },
+  "plugins": [
+    {
+      "name": "yandex-tracker",
+      "source": {
+        "source": "local",
+        "path": "./plugins/yandex-tracker"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

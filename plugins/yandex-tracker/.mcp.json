@@ -1,9 +1,10 @@
 {
   "mcpServers": {
     "yandex-tracker": {
+      "cwd": ".",
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/dist/bundle.js"
+        "./dist/bundle.js"
       ]
     }
   }

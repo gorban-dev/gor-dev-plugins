@@ -1,0 +1,45 @@
+{
+  "name": "yandex-tracker",
+  "version": "1.0.0",
+  "description": "Yandex Tracker integration with MCP tools and workflow skills for issues, sprints, boards, worklogs, and project management.",
+  "author": {
+    "name": "Sergey Gorban",
+    "email": "gorban.dev@gmail.com",
+    "url": "https://github.com/gorban-dev"
+  },
+  "homepage": "https://github.com/gorban-dev/gor-dev-plugins",
+  "repository": "https://github.com/gorban-dev/gor-dev-plugins",
+  "license": "MIT",
+  "keywords": [
+    "yandex-tracker",
+    "issue-tracking",
+    "project-management",
+    "sprint-planning",
+    "time-tracking",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Yandex Tracker",
+    "shortDescription": "Manage Yandex Tracker issues, sprints, boards, and worklogs",
+    "longDescription": "Use Yandex Tracker from Codex through MCP tools and workflow guidance for issue management, comments, worklogs, status transitions, links, checklists, queues, sprints, boards, users, and attachments.",
+    "developerName": "Sergey Gorban",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/gorban-dev/gor-dev-plugins",
+    "privacyPolicyURL": "https://github.com/gorban-dev/gor-dev-plugins",
+    "termsOfServiceURL": "https://github.com/gorban-dev/gor-dev-plugins",
+    "defaultPrompt": [
+      "Show my Yandex Tracker tasks and summarize what needs attention",
+      "Fetch this Yandex Tracker issue and prepare an execution plan",
+      "Log work or update status for a Yandex Tracker issue"
+    ],
+    "brandColor": "#FFCC00",
+    "screenshots": []
+  }
+}

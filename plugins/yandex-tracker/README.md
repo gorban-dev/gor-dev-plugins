@@ -1,11 +1,11 @@
 # Yandex Tracker Plugin
 
-Full Yandex Tracker integration for Claude Code: **30+ MCP tools**, interactive **agent**, and **skill** with workflow patterns.
+Full Yandex Tracker integration for Claude Code and Codex: **30+ MCP tools**, workflow **skill**, and a Claude Code interactive **agent**.
 
 ## Features
 
 - **30+ MCP tools** covering the full Yandex Tracker API v2
-- **tracker-manager agent** for interactive task execution with step-by-step confirmation
+- **tracker-manager agent** for Claude Code interactive task execution with step-by-step confirmation
 - **yandex-tracker skill** with query language reference and workflow patterns
 
 ## MCP Tools
@@ -163,7 +163,24 @@ After setting system variables, restart Claude Code (or log out and back in).
 
 ### 3. Install plugin
 
-Install as a Claude Code plugin — the bundled MCP server (`dist/bundle.js`) is included and works immediately, no `npm install` required.
+#### Claude Code
+
+Install as a Claude Code plugin. The bundled MCP server (`dist/bundle.js`) is included and works immediately, no `npm install` required.
+
+#### Codex
+
+The Codex plugin manifest is included at `.codex-plugin/plugin.json`, and the repo-local marketplace entry is included at `.agents/plugins/marketplace.json`.
+
+From a clone of this repository:
+
+```bash
+npm --prefix plugins/yandex-tracker install
+npm --prefix plugins/yandex-tracker run build
+codex plugin marketplace add /path/to/gor-dev-plugins
+codex plugin add yandex-tracker@gor-dev-plugins
+```
+
+Start a new Codex thread after installation so the plugin skill and MCP tools are loaded. The `agents/tracker-manager.md` agent is Claude Code-only; in Codex, use the `yandex-tracker` skill and MCP tools directly.
 
 ## License
 
