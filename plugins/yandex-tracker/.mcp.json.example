@@ -1,13 +1,16 @@
 {
   "mcpServers": {
     "yandex-tracker": {
+      "cwd": ".",
       "command": "node",
       "args": [
-        "${CLAUDE_PLUGIN_ROOT}/dist/index.js"
+        "./dist/bundle.js"
       ],
       "env": {
-        "YANDEX_TRACKER_TOKEN": "your_oauth_token_here",
-        "YANDEX_TRACKER_ORG_ID": "your_org_id_here"
+        "YANDEX_TRACKER_TOKEN": "${YANDEX_TRACKER_TOKEN}",
+        "YANDEX_TRACKER_ORG_ID": "${YANDEX_TRACKER_ORG_ID}",
+        "YANDEX_TRACKER_IAM_TOKEN": "${YANDEX_TRACKER_IAM_TOKEN}",
+        "YANDEX_TRACKER_CLOUD_ORG_ID": "${YANDEX_TRACKER_CLOUD_ORG_ID}"
       }
     }
   }

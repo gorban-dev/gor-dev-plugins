@@ -18,20 +18,6 @@ const ORG_ID = process.env.YANDEX_TRACKER_ORG_ID;
 const IAM_TOKEN = process.env.YANDEX_TRACKER_IAM_TOKEN;
 const CLOUD_ORG_ID = process.env.YANDEX_TRACKER_CLOUD_ORG_ID;
 
-if (!API_TOKEN && !IAM_TOKEN) {
-  console.error(
-    "Error: YANDEX_TRACKER_TOKEN or YANDEX_TRACKER_IAM_TOKEN must be set",
-  );
-  process.exit(1);
-}
-
-if (!ORG_ID && !CLOUD_ORG_ID) {
-  console.error(
-    "Error: YANDEX_TRACKER_ORG_ID or YANDEX_TRACKER_CLOUD_ORG_ID must be set",
-  );
-  process.exit(1);
-}
-
 const client = new TrackerClient({
   token: API_TOKEN,
   iamToken: IAM_TOKEN,

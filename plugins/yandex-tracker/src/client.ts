@@ -30,28 +30,47 @@ export function withErrorHandling<T extends unknown[]>(
 }
 
 export class TrackerClient {
-  private readonly authHeader: string;
-  private readonly orgIdHeaderName: string;
-  private readonly orgIdHeaderValue: string;
+  private readonly authHeader?: string;
+  private readonly orgIdHeaderName?: string;
+  private readonly orgIdHeaderValue?: string;
 
   constructor(config: ClientConfig) {
-    if (config.iamToken) {
-      this.authHeader = `Bearer ${config.iamToken}`;
-    } else if (config.token) {
-      this.authHeader = `OAuth ${config.token}`;
-    } else {
-      throw new Error("Either token or iamToken must be provided");
+    const iamToken = normalizeEnvValue(config.iamToken);
+    const token = normalizeEnvValue(config.token);
+    const cloudOrgId = normalizeEnvValue(config.cloudOrgId);
+    const orgId = normalizeEnvValue(config.orgId);
+
+    if (iamToken) {
+      this.authHeader = `Bearer ${iamToken}`;
+    } else if (token) {
+      this.authHeader = `OAuth ${token}`;
     }
 
-    if (config.cloudOrgId) {
+    if (cloudOrgId) {
       this.orgIdHeaderName = "X-Cloud-Org-Id";
-      this.orgIdHeaderValue = config.cloudOrgId;
-    } else if (config.orgId) {
+      this.orgIdHeaderValue = cloudOrgId;
+    } else if (orgId) {
       this.orgIdHeaderName = "X-Org-Id";
-      this.orgIdHeaderValue = config.orgId;
-    } else {
-      throw new Error("Either orgId or cloudOrgId must be provided");
+      this.orgIdHeaderValue = orgId;
     }
+  }
+
+  private headers(contentType?: string): Record<string, string> {
+    if (!this.authHeader) {
+      throw new Error("Either YANDEX_TRACKER_TOKEN or YANDEX_TRACKER_IAM_TOKEN must be set");
+    }
+    if (!this.orgIdHeaderName || !this.orgIdHeaderValue) {
+      throw new Error("Either YANDEX_TRACKER_ORG_ID or YANDEX_TRACKER_CLOUD_ORG_ID must be set");
+    }
+
+    const headers: Record<string, string> = {
+      Authorization: this.authHeader,
+      [this.orgIdHeaderName]: this.orgIdHeaderValue,
+    };
+    if (contentType) {
+      headers["Content-Type"] = contentType;
+    }
+    return headers;
   }
 
   async request<T>(
@@ -59,11 +78,7 @@ export class TrackerClient {
     options: RequestInit = {},
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers: Record<string, string> = {
-      Authorization: this.authHeader,
-      [this.orgIdHeaderName]: this.orgIdHeaderValue,
-      "Content-Type": "application/json",
-    };
+    const headers = this.headers("application/json");
 
     const response = await fetch(url, { ...options, headers });
 
@@ -95,13 +110,7 @@ export class TrackerClient {
     contentType?: string,
   ): Promise<Response> {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers: Record<string, string> = {
-      Authorization: this.authHeader,
-      [this.orgIdHeaderName]: this.orgIdHeaderValue,
-    };
-    if (contentType) {
-      headers["Content-Type"] = contentType;
-    }
+    const headers = this.headers(contentType);
 
     const response = await fetch(url, { ...options, headers });
 
@@ -120,4 +129,10 @@ export class TrackerClient {
 
     return response;
   }
+}
+
+function normalizeEnvValue(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  if (/^\$\{[A-Z0-9_]+\}$/.test(value)) return undefined;
+  return value;
 }

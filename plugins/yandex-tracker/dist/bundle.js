@@ -21008,30 +21008,42 @@ var TrackerClient = class {
   orgIdHeaderName;
   orgIdHeaderValue;
   constructor(config2) {
-    if (config2.iamToken) {
-      this.authHeader = `Bearer ${config2.iamToken}`;
-    } else if (config2.token) {
-      this.authHeader = `OAuth ${config2.token}`;
-    } else {
-      throw new Error("Either token or iamToken must be provided");
+    const iamToken = normalizeEnvValue(config2.iamToken);
+    const token = normalizeEnvValue(config2.token);
+    const cloudOrgId = normalizeEnvValue(config2.cloudOrgId);
+    const orgId = normalizeEnvValue(config2.orgId);
+    if (iamToken) {
+      this.authHeader = `Bearer ${iamToken}`;
+    } else if (token) {
+      this.authHeader = `OAuth ${token}`;
     }
-    if (config2.cloudOrgId) {
+    if (cloudOrgId) {
       this.orgIdHeaderName = "X-Cloud-Org-Id";
-      this.orgIdHeaderValue = config2.cloudOrgId;
-    } else if (config2.orgId) {
+      this.orgIdHeaderValue = cloudOrgId;
+    } else if (orgId) {
       this.orgIdHeaderName = "X-Org-Id";
-      this.orgIdHeaderValue = config2.orgId;
-    } else {
-      throw new Error("Either orgId or cloudOrgId must be provided");
+      this.orgIdHeaderValue = orgId;
     }
+  }
+  headers(contentType) {
+    if (!this.authHeader) {
+      throw new Error("Either YANDEX_TRACKER_TOKEN or YANDEX_TRACKER_IAM_TOKEN must be set");
+    }
+    if (!this.orgIdHeaderName || !this.orgIdHeaderValue) {
+      throw new Error("Either YANDEX_TRACKER_ORG_ID or YANDEX_TRACKER_CLOUD_ORG_ID must be set");
+    }
+    const headers = {
+      Authorization: this.authHeader,
+      [this.orgIdHeaderName]: this.orgIdHeaderValue
+    };
+    if (contentType) {
+      headers["Content-Type"] = contentType;
+    }
+    return headers;
   }
   async request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers = {
-      Authorization: this.authHeader,
-      [this.orgIdHeaderName]: this.orgIdHeaderValue,
-      "Content-Type": "application/json"
-    };
+    const headers = this.headers("application/json");
     const response = await fetch(url, { ...options, headers });
     if (!response.ok) {
       let errorMessage = `API request failed: ${response.status} ${response.statusText}`;
@@ -21055,13 +21067,7 @@ Errors: ${JSON.stringify(errorData.errors)}`;
   }
   async requestRaw(endpoint, options = {}, contentType) {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers = {
-      Authorization: this.authHeader,
-      [this.orgIdHeaderName]: this.orgIdHeaderValue
-    };
-    if (contentType) {
-      headers["Content-Type"] = contentType;
-    }
+    const headers = this.headers(contentType);
     const response = await fetch(url, { ...options, headers });
     if (!response.ok) {
       let errorMessage = `API request failed: ${response.status} ${response.statusText}`;
@@ -21078,6 +21084,13 @@ Details: ${errorData.errorMessages.join(", ")}`;
     return response;
   }
 };
+function normalizeEnvValue(value) {
+  if (!value)
+    return void 0;
+  if (/^\$\{[A-Z0-9_]+\}$/.test(value))
+    return void 0;
+  return value;
+}
 
 // dist/tools/issues.js
 var CHARACTER_LIMIT = 25e3;
@@ -22270,14 +22283,6 @@ var API_TOKEN = process.env.YANDEX_TRACKER_TOKEN;
 var ORG_ID = process.env.YANDEX_TRACKER_ORG_ID;
 var IAM_TOKEN = process.env.YANDEX_TRACKER_IAM_TOKEN;
 var CLOUD_ORG_ID = process.env.YANDEX_TRACKER_CLOUD_ORG_ID;
-if (!API_TOKEN && !IAM_TOKEN) {
-  console.error("Error: YANDEX_TRACKER_TOKEN or YANDEX_TRACKER_IAM_TOKEN must be set");
-  process.exit(1);
-}
-if (!ORG_ID && !CLOUD_ORG_ID) {
-  console.error("Error: YANDEX_TRACKER_ORG_ID or YANDEX_TRACKER_CLOUD_ORG_ID must be set");
-  process.exit(1);
-}
 var client = new TrackerClient({
   token: API_TOKEN,
   iamToken: IAM_TOKEN,
