@@ -2,7 +2,7 @@
   "name": "yandex-tracker",
   "displayName": "Yandex Tracker",
   "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent, workflow skills",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": {
     "name": "Sergey Gorban",
     "email": "gorban.dev@gmail.com"

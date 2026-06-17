@@ -182,6 +182,11 @@ The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or l
 
 Start a new Codex thread after installation so the plugin skill and MCP tools are loaded. The `agents/tracker-manager.md` agent is Claude Code-only; in Codex, use the `yandex-tracker` skill and MCP tools directly.
 
+Claude Code uses the shared `.mcp.json` with `${...}` placeholders. Codex uses
+`.codex.mcp.json` through `.codex-plugin/plugin.json`, with `env_vars` so the
+real credential values are inherited by name instead of passing placeholders
+literally.
+
 ## License
 
 MIT

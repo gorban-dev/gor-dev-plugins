@@ -1,6 +1,6 @@
 {
   "name": "yandex-tracker",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Yandex Tracker integration: 30+ MCP tools for full API coverage, agent for interactive task execution, skills for workflow patterns",
   "license": "MIT",
   "keywords": [

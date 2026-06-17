@@ -30,6 +30,9 @@
    export YANDEX_TRACKER_CLOUD_ORG_ID="your_cloud_org_id_here"
    ```
 
+   Codex uses `.codex.mcp.json`, which passes these values through with
+   `env_vars`. The shared `.mcp.json` is kept for Claude Code compatibility.
+
 4. **Start a new Codex thread** so the plugin skills and MCP tools are loaded.
 
 ## Notes
@@ -37,7 +40,8 @@
 - The `agents/tracker-manager.md` agent is Claude Code-only. On Codex you drive the workflow yourself by calling MCP tools.
 - The Codex plugin manifest is in `.codex-plugin/plugin.json`.
 - The Codex marketplace entry is in `.agents/plugins/marketplace.json`.
-- The MCP server uses `.mcp.json` with paths relative to the plugin root.
+- Codex uses `.codex.mcp.json` with paths relative to the plugin root.
+- Claude Code uses the shared `.mcp.json`.
 - The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or local build step is required for normal installation.
 
 ## Updating
