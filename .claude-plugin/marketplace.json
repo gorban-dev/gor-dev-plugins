@@ -5,15 +5,10 @@
     "email": "gorban.dev@gmail.com"
   },
   "metadata": {
-    "description": "Android & KMM developer plugins: unified developer agent, Swagger model generation, Yandex Tracker, Google Developer Knowledge, KMM ↔ iOS migration",
-    "version": "2.1.0"
+    "description": "Android developer plugins: Swagger model generation, Yandex Tracker integration",
+    "version": "3.0.0"
   },
   "plugins": [
-    {
-      "name": "android-dev",
-      "description": "Unified Android developer: one proactive agent for brainstorm, plan, implement, review, test, verify",
-      "source": "./plugins/android-dev"
-    },
     {
       "name": "swagger-android",
       "description": "Generate Android Kotlin data models from Swagger/OpenAPI specifications",
@@ -23,16 +18,6 @@
       "name": "yandex-tracker",
       "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent for task execution, workflow skills",
       "source": "./plugins/yandex-tracker"
-    },
-    {
-      "name": "google-dev-knowledge",
-      "description": "Google Developer Knowledge API: real-time access to official docs from Android, Firebase, Cloud, Chrome, Flutter, TensorFlow, Google AI and more",
-      "source": "./plugins/google-dev-knowledge"
-    },
-    {
-      "name": "kmp-migrator-superpowers",
-      "description": "Bidirectional KMM ↔ iOS migration toolkit built on Superpowers methodology — TDD, brainstorming, evidence-based verification, business-logic fidelity",
-      "source": "./plugins/kmp-migrator-superpowers"
     }
   ]
 }

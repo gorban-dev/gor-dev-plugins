@@ -135,22 +135,3 @@ jobs:
               sys.exit(1)
           print(f'All {len(files)} agents checked ({len(warnings)} warnings)')
           "
-
-  android-dev-tests:
-    name: android-dev plugin tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
-        run: pip install pytest pyyaml
-
-      - name: Run tests
-        working-directory: plugins/android-dev
-        run: python -m pytest tests/ -v

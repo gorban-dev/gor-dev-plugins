@@ -2,13 +2,13 @@
 
 # Mobile Dev Toolkit
 
-**Plugins for Android, KMM and iOS development**
+**Plugins for Android development — OpenAPI models and Yandex Tracker**
 
-[![Marketplace](https://img.shields.io/badge/marketplace-v2.1.0-blue?style=flat-square)](https://github.com/gorban-dev/gor-dev-plugins/releases/latest)
+[![Marketplace](https://img.shields.io/badge/marketplace-v3.0.0-blue?style=flat-square)](https://github.com/gorban-dev/gor-dev-plugins/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-[![Plugins](https://img.shields.io/badge/plugins-5-orange?style=flat-square)](#available-plugins)
+[![Plugins](https://img.shields.io/badge/plugins-2-orange?style=flat-square)](#available-plugins)
 
-[Claude Code](https://claude.com/claude-code) · [Cursor](https://cursor.com) · [OpenAI Codex CLI](https://github.com/openai/codex) · [Gemini CLI](https://github.com/google-gemini/gemini-cli) · [OpenCode](https://opencode.ai)
+[Claude Code](https://claude.com/claude-code) · [Cursor](https://cursor.com) · [OpenAI Codex CLI](https://github.com/openai/codex) · [OpenCode](https://opencode.ai)
 
 </div>
 
@@ -18,11 +18,10 @@
 
 | Plugin | Version | Description |
 |--------|---------|-------------|
-| [**android-dev**](plugins/android-dev) | `2.0.0` | Unified Android developer agent: brainstorm → plan → implement → review → test → verify |
-| [**kmp-migrator-superpowers**](plugins/kmp-migrator-superpowers) | `1.0.0` | Bidirectional KMM ↔ iOS migration toolkit on the Superpowers methodology |
 | [**swagger-android**](plugins/swagger-android) | `1.2.0` | Generate Android Kotlin data models from Swagger/OpenAPI specs |
-| [**yandex-tracker**](plugins/yandex-tracker) | `1.0.0` | Yandex Tracker MCP server: 30+ tools, agent, workflows, sprint planning |
-| [**google-dev-knowledge**](plugins/google-dev-knowledge) | `1.0.0` | Real-time access to official Google developer docs (Android, Firebase, Cloud, Flutter, TensorFlow, Google AI) |
+| [**yandex-tracker**](plugins/yandex-tracker) | `1.0.2` | Yandex Tracker MCP server: 30+ tools, agent, workflows, sprint planning |
+
+> The development workflow plugins (`android-dev`, `kmp-migrator-superpowers`) moved to a standalone CLI — [**gor-mobile**](https://github.com/gorban-dev/gor-mobile). See [Migration to gor-mobile](#migration-to-gor-mobile).
 
 ---
 
@@ -50,11 +49,8 @@ Or pin everything in your project's `.claude/settings.json`:
     }
   },
   "enabledPlugins": {
-    "android-dev@gor-dev-plugins": true,
-    "kmp-migrator-superpowers@gor-dev-plugins": true,
     "swagger-android@gor-dev-plugins": true,
-    "yandex-tracker@gor-dev-plugins": true,
-    "google-dev-knowledge@gor-dev-plugins": true
+    "yandex-tracker@gor-dev-plugins": true
   }
 }
 ```
@@ -78,66 +74,11 @@ Each plugin ships per-platform manifests and a dedicated `INSTALL.md` inside its
 |----------|---------------|
 | **Cursor** | `<plugin>/.cursor-plugin/plugin.json` |
 | **Codex CLI** | `<plugin>/.codex/INSTALL.md` |
-| **Gemini CLI** | `<plugin>/gemini-extension.json` + `<plugin>/GEMINI.md` |
 | **OpenCode** | `<plugin>/.opencode/INSTALL.md` |
 
 ---
 
 ## Plugins
-
-### android-dev `v2.0.0`
-
-One agent replaces 6 separate agents and 14 skills.
-
-**Agent** — `android-dev` (model: opus). Senior Android developer that automatically picks the right skill and proactively runs the full development cycle.
-
-**Skills**
-
-| Skill | Description |
-|-------|-------------|
-| `brainstorm` | Explore approaches and design solutions before coding |
-| `plan` | Create granular implementation plans (2–5 min tasks) and execute |
-| `implement` | Build features from scratch, modify existing, or refactor |
-| `debug` | Systematic debugging: root cause → hypothesis → fix → verify |
-| `tdd` | Test-driven development: RED → GREEN → REFACTOR |
-| `review` | Two-pass review: architecture (8 cats) + code quality (6 cats) |
-| `test-ui` | UI testing on device via claude-in-mobile CLI |
-| `verify` | Evidence-based completion check — no "should work" |
-
-**Proactive workflow**
-
-```
-implement → review (auto) → fix if FAIL (max 3) → test-ui (auto) → verify (auto) → report
-```
-
-For complex tasks:
-
-```
-brainstorm → plan → implement → review → test-ui → verify
-```
-
-**Architecture rules** (Jetpack Compose + Clean Architecture)
-
-- **Screen** — thin adapter (`collectAsStateWithLifecycle`, `CollectWithLifecycle`)
-- **View** — pure UI, no logic or side-effects
-- **ViewModel** — `BaseSharedViewModel`, `handleEvent()`, `updateState`
-- **UseCase** — `suspend fun execute()`, returns `Result<T>`
-- **Repository** — interface + impl, depends only on DataSources
-
----
-
-### kmp-migrator-superpowers `v1.0.0`
-
-Bidirectional **KMM ↔ iOS** migration toolkit on top of the [Superpowers](https://github.com/obra/superpowers) methodology by Jesse Vincent. Both directions:
-
-- **KMM → iOS** — extract shared Kotlin into native Swift in `iosApp/`
-- **iOS → KMM** — lift duplicated native Swift into shared Kotlin
-
-Five-phase workflow with HARD-GATEs: `brainstorm → plan → execute → review → verify`. Preserves business logic line-by-line; honors the project's existing architecture.
-
-The plugin keeps the full Superpowers skill set unchanged and adds an extended `using-superpowers` skill (KMM ↔ iOS Migration Mode) plus a `rules/` directory with the migration playbook and reference material.
-
----
 
 ### swagger-android `v1.2.0`
 
@@ -150,31 +91,48 @@ Generates Android Kotlin data models from Swagger / OpenAPI specifications.
 
 ---
 
-### yandex-tracker `v1.0.0`
+### yandex-tracker `v1.0.2`
 
 Local MCP server with **30+ tools** covering the Yandex Tracker API: issues, comments, worklogs, checklists, sprints, boards, queues, transitions, attachments. Ships with the `tracker-manager` agent for interactive task execution and skills for daily workflows (standups, sprint planning, time tracking).
 
 ---
 
-### google-dev-knowledge `v1.0.0`
+## Migration to gor-mobile
 
-Remote MCP server (Google Developer Knowledge API) with real-time access to official documentation: **Android · Firebase · Cloud · Chrome · Flutter · TensorFlow · web.dev · Google AI**.
-
-Requires a free API key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
-
----
-
-## Migration from v1.x
-
-If you were using `android-arch` and `dev-workflow`, replace them with `android-dev`:
+`android-dev`, `kmp-migrator-superpowers` and `google-dev-knowledge` were removed in **v3.0.0**. Drop them from your config:
 
 ```diff
   "enabledPlugins": {
--   "dev-workflow@gor-dev-plugins": true,
--   "android-arch@gor-dev-plugins": true,
-+   "android-dev@gor-dev-plugins": true,
+-   "android-dev@gor-dev-plugins": true,
+-   "kmp-migrator-superpowers@gor-dev-plugins": true,
+-   "google-dev-knowledge@gor-dev-plugins": true,
+    "swagger-android@gor-dev-plugins": true,
+    "yandex-tracker@gor-dev-plugins": true
   }
 ```
+
+### android-dev, kmp-migrator-superpowers → gor-mobile
+
+Both are superseded by [**gor-mobile**](https://github.com/gorban-dev/gor-mobile) — a standalone CLI instead of a plugin. It ships the same `brainstorm → plan → implement → review → verify` workflow with 14 skills, two review agents, hooks, rules packs and artifact retention, and works in both Claude Code (per-repo) and Codex (user-level).
+
+```bash
+brew install gorban-dev/gor-mobile/gor-mobile   # or: npm install -g gor-mobile
+gor-mobile setup                                # one-time machine setup
+cd ~/code/my-android-app && gor-mobile init     # install into the repo
+```
+
+Device work, project scaffolding, SDK/emulator management and Android docs lookup go through Google's [Android CLI](https://developer.android.com/tools/agents/android-cli), which `gor-mobile` requires and drives.
+
+### google-dev-knowledge → official Google MCP server
+
+The plugin was a thin wrapper around Google's own remote MCP server. Connect to it directly:
+
+```bash
+claude mcp add google-dev-knowledge --transport http https://developerknowledge.googleapis.com/mcp \
+  --header "X-Goog-Api-Key: YOUR_API_KEY"
+```
+
+Docs: [developers.google.com/knowledge/mcp](https://developers.google.com/knowledge/mcp). For Android-only lookups, `android docs search` / `android docs fetch` from the Android CLI hits the Android Knowledge Base without an API key.
 
 ---
 
