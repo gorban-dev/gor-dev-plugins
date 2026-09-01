@@ -1,5 +1,30 @@
 # Changelog
 
+## v3.1.0 — Attachment download, tracker-manager agent removed
+
+`yandex-tracker` 1.0.2 → 2.0.0.
+
+### Added
+
+`yandex_tracker_download_attachment` saves issue attachments to disk so the agent can read them — screenshots, logs, specs, anything the reporter attached.
+
+| Argument | Effect |
+|----------|--------|
+| `attachment_id` | Download one attachment by ID |
+| `filename` | Download attachments with this name (case-insensitive) |
+| neither | Download every attachment on the issue |
+| `output_dir` | Target directory; default `<tmp>/yandex-tracker/<ISSUE-KEY>` |
+
+The response is a table of absolute paths — read one with your file-reading tool. `list_attachments` gained an **ID** column, since the ID was previously visible only with `response_format="json"`.
+
+### Removed
+
+`agents/tracker-manager.md`. A subagent cannot stop and ask the user, and the agent's entire execute-task flow — present plan, wait for confirmation, change code, confirm again — was built on exactly that. Everything read-only already worked in the main thread through the skill.
+
+### Migrating
+
+Nothing to change in settings. If you invoked the agent by name, drop the mention: the same workflows live in `skills/yandex-tracker/references/workflows.md` and run in the main thread, where confirmation prompts actually reach you.
+
 ## v3.0.0 — Workflow plugins move to gor-mobile
 
 Three plugins are gone. The marketplace is now two plugins: `swagger-android` and `yandex-tracker`.

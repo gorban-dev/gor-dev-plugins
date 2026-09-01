@@ -37,7 +37,6 @@
 
 ## Notes
 
-- The `agents/tracker-manager.md` agent is Claude Code-only. On Codex you drive the workflow yourself by calling MCP tools.
 - The Codex plugin manifest is in `.codex-plugin/plugin.json`.
 - The Codex marketplace entry is in `.agents/plugins/marketplace.json`.
 - Codex uses `.codex.mcp.json` with paths relative to the plugin root.

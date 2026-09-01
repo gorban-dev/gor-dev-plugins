@@ -80,6 +80,7 @@ description: Specialized workflows for Yandex Tracker project management via 30+
 | Tool | Use When |
 |------|----------|
 | `yandex_tracker_list_attachments` | Listing files attached to an issue |
+| `yandex_tracker_download_attachment` | Saving attachments locally to read screenshots, logs, specs |
 | `yandex_tracker_upload_attachment` | Uploading a file to an issue |
 
 ## Critical Patterns

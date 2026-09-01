@@ -1,6 +1,6 @@
 {
   "name": "@gor-dev/yandex-tracker-mcp",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "MCP server for Yandex Tracker API — full coverage with 30+ tools",
   "type": "module",
   "main": "dist/index.js",
@@ -10,7 +10,6 @@
   "files": [
     "dist",
     "skills",
-    "agents",
     ".claude-plugin",
     ".codex-plugin",
     ".mcp.json",

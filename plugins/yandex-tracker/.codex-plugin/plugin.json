@@ -1,6 +1,6 @@
 {
   "name": "yandex-tracker",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Yandex Tracker integration with MCP tools and workflow skills for issues, sprints, boards, worklogs, and project management.",
   "author": {
     "name": "Sergey Gorban",

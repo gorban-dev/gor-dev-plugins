@@ -27,7 +27,7 @@ const client = new TrackerClient({
 
 const server = new McpServer({
   name: "yandex-tracker-mcp-server",
-  version: "1.0.0",
+  version: "2.0.0",
 });
 
 registerIssueTools(server, client);

@@ -93,7 +93,7 @@ Generates Android Kotlin data models from Swagger / OpenAPI specifications.
 
 ### yandex-tracker `v1.0.2`
 
-Local MCP server with **30+ tools** covering the Yandex Tracker API: issues, comments, worklogs, checklists, sprints, boards, queues, transitions, attachments. Ships with the `tracker-manager` agent for interactive task execution and skills for daily workflows (standups, sprint planning, time tracking).
+Local MCP server with **30+ tools** covering the Yandex Tracker API: issues, comments, worklogs, checklists, sprints, boards, queues, transitions, attachments. Ships with a skill for daily workflows (standups, sprint planning, time tracking).
 
 ---
 

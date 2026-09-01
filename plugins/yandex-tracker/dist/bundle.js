@@ -22208,24 +22208,41 @@ Returns: User info with login, display name, email.`,
 }
 
 // dist/tools/attachments.js
-import { readFile } from "node:fs/promises";
-import { basename } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { basename, join } from "node:path";
+import { tmpdir } from "node:os";
 function formatAttachments(attachments) {
   if (!attachments.length)
     return "No attachments found.";
   let md = `# Attachments (${attachments.length})
 
 `;
-  md += `| Name | Size | Type | Uploaded By | Date |
+  md += `| ID | Name | Size | Type | Uploaded By | Date |
 `;
-  md += `|------|------|------|-------------|------|
+  md += `|----|------|------|------|-------------|------|
 `;
   for (const a of attachments) {
     const sizeKb = a.size ? `${Math.round(a.size / 1024)}KB` : "N/A";
-    md += `| ${a.name ?? "N/A"} | ${sizeKb} | ${a.mimetype ?? "N/A"} | ${a.createdBy?.display ?? "N/A"} | ${a.createdAt ?? "N/A"} |
+    md += `| ${a.id ?? "N/A"} | ${a.name ?? "N/A"} | ${sizeKb} | ${a.mimetype ?? "N/A"} | ${a.createdBy?.display ?? "N/A"} | ${a.createdAt ?? "N/A"} |
 `;
   }
   return md;
+}
+function safeFileName(attachment) {
+  const name = basename(attachment.name ?? "");
+  if (!name || name === "." || name === "..") {
+    return `attachment-${attachment.id ?? "unnamed"}`;
+  }
+  return name;
+}
+function selectAttachments(attachments, attachmentId, filename) {
+  if (attachmentId)
+    return attachments.filter((a) => a.id === attachmentId);
+  if (filename) {
+    const wanted = filename.toLowerCase();
+    return attachments.filter((a) => (a.name ?? "").toLowerCase() === wanted);
+  }
+  return attachments;
 }
 var ListAttachmentsSchema = external_exports.object({
   issue_key: external_exports.string().describe("Issue key"),
@@ -22236,6 +22253,12 @@ var UploadAttachmentSchema = external_exports.object({
   file_path: external_exports.string().describe("Absolute path to the file to upload"),
   filename: external_exports.string().optional().describe("Override filename (default: use file's basename)")
 }).strict();
+var DownloadAttachmentSchema = external_exports.object({
+  issue_key: external_exports.string().describe("Issue key"),
+  attachment_id: external_exports.string().optional().describe("Download one attachment by ID (from list_attachments)"),
+  filename: external_exports.string().optional().describe("Download attachments matching this name (case-insensitive)"),
+  output_dir: external_exports.string().optional().describe("Directory to save into (default: <tmp>/yandex-tracker/<ISSUE-KEY>)")
+}).strict();
 function registerAttachmentTools(server2, client2) {
   server2.registerTool("yandex_tracker_list_attachments", {
     title: "List Attachments",
@@ -22245,13 +22268,62 @@ Args:
   - issue_key (string, required): Issue key
   - response_format: "json" or "markdown"
 
-Returns: Table of attachments with name, size, type, uploader, date.`,
+Returns: Table of attachments with ID, name, size, type, uploader, date.
+Pass an ID to yandex_tracker_download_attachment to save the file locally.`,
     inputSchema: ListAttachmentsSchema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
   }, withErrorHandling(async (args) => {
     const attachments = await client2.request(`/issues/${args.issue_key}/attachments`);
     const text = args.response_format === "json" ? JSON.stringify(attachments, null, 2) : formatAttachments(Array.isArray(attachments) ? attachments : []);
     return { content: [{ type: "text", text }] };
+  }));
+  server2.registerTool("yandex_tracker_download_attachment", {
+    title: "Download Attachment",
+    description: `Download issue attachments to the local filesystem so they can be read.
+
+Args:
+  - issue_key (string, required): Issue key
+  - attachment_id (string): Download a single attachment by ID
+  - filename (string): Download attachments with this name (case-insensitive)
+  - output_dir (string): Target directory (default: <tmp>/yandex-tracker/<ISSUE-KEY>)
+
+With neither attachment_id nor filename, every attachment on the issue is downloaded.
+
+Returns: Table of saved files with absolute paths. Read a path with your file-reading
+tool to inspect the content (images, PDFs, logs, code).`,
+    inputSchema: DownloadAttachmentSchema,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+  }, withErrorHandling(async (args) => {
+    const response = await client2.request(`/issues/${args.issue_key}/attachments`);
+    const attachments = Array.isArray(response) ? response : [];
+    const selected = selectAttachments(attachments, args.attachment_id, args.filename);
+    if (!selected.length) {
+      const available = attachments.length ? attachments.map((a) => `  ${a.id ?? "N/A"} \u2014 ${a.name ?? "N/A"}`).join("\n") : "  (issue has no attachments)";
+      throw new Error(`No attachment matched in ${args.issue_key}.
+Available:
+${available}`);
+    }
+    const outputDir = args.output_dir ?? join(tmpdir(), "yandex-tracker", args.issue_key);
+    await mkdir(outputDir, { recursive: true });
+    let md = `# Downloaded ${selected.length} attachment(s) from ${args.issue_key}
+
+`;
+    md += `| File | Size | Type | Path |
+`;
+    md += `|------|------|------|------|
+`;
+    for (const attachment of selected) {
+      if (!attachment.id)
+        continue;
+      const name = safeFileName(attachment);
+      const fileResponse = await client2.requestRaw(`/issues/${args.issue_key}/attachments/${attachment.id}/${encodeURIComponent(attachment.name ?? name)}`);
+      const data = Buffer.from(await fileResponse.arrayBuffer());
+      const filePath = join(outputDir, name);
+      await writeFile(filePath, data);
+      md += `| ${name} | ${data.length} bytes | ${attachment.mimetype ?? "N/A"} | ${filePath} |
+`;
+    }
+    return { content: [{ type: "text", text: md }] };
   }));
   server2.registerTool("yandex_tracker_upload_attachment", {
     title: "Upload Attachment",
@@ -22291,7 +22363,7 @@ var client = new TrackerClient({
 });
 var server = new McpServer({
   name: "yandex-tracker-mcp-server",
-  version: "1.0.0"
+  version: "2.0.0"
 });
 registerIssueTools(server, client);
 registerCommentTools(server, client);

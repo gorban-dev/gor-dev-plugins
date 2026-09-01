@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Android developer plugins: Swagger model generation, Yandex Tracker integration",
-    "version": "3.0.0"
+    "version": "3.1.0"
   },
   "plugins": [
     {
@@ -16,7 +16,7 @@
     },
     {
       "name": "yandex-tracker",
-      "description": "Yandex Tracker integration: 30+ MCP tools, interactive agent for task execution, workflow skills",
+      "description": "Yandex Tracker integration: 30+ MCP tools, workflow skills",
       "source": "./plugins/yandex-tracker"
     }
   ]

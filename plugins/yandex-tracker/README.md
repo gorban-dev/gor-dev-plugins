@@ -1,11 +1,10 @@
 # Yandex Tracker Plugin
 
-Full Yandex Tracker integration for Claude Code and Codex: **30+ MCP tools**, workflow **skill**, and a Claude Code interactive **agent**.
+Full Yandex Tracker integration for Claude Code and Codex: **30+ MCP tools** and a workflow **skill**.
 
 ## Features
 
 - **30+ MCP tools** covering the full Yandex Tracker API v2
-- **tracker-manager agent** for Claude Code interactive task execution with step-by-step confirmation
 - **yandex-tracker skill** with query language reference and workflow patterns
 
 ## MCP Tools
@@ -79,25 +78,18 @@ Full Yandex Tracker integration for Claude Code and Codex: **30+ MCP tools**, wo
 |------|-------------|
 | `get_myself` | Get current user info |
 
-### Attachments (2 tools)
+### Attachments (3 tools)
 | Tool | Description |
 |------|-------------|
 | `list_attachments` | List issue attachments |
+| `download_attachment` | Download attachments to disk so they can be read locally |
 | `upload_attachment` | Upload a file to issue |
 
-## Agent: tracker-manager
+## Usage
 
-Interactive agent for task execution with user confirmation at each step.
+The `yandex-tracker` skill loads automatically when a request touches Tracker. Example prompts:
 
-**Example:** "Выполни задачу ARU-7743" triggers:
-1. Fetches issue data, comments, checklist, links
-2. Builds execution plan
-3. Shows plan and asks for confirmation
-4. Moves issue to "In Progress"
-5. Executes with step-by-step approval
-6. Logs time, adds comment, transitions to Done
-
-**Other intents:**
+- "Выполни задачу ARU-7743" — fetch issue, comments, checklist, links and attachments, then work through the task
 - "Покажи мои задачи" — search and display current tasks
 - "Залогируй 3 часа на ARU-123" — add worklog
 - "Что у меня на сегодня?" — daily standup report
@@ -180,7 +172,7 @@ codex plugin add yandex-tracker@gor-dev-plugins
 
 The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or local build step is required for normal installation.
 
-Start a new Codex thread after installation so the plugin skill and MCP tools are loaded. The `agents/tracker-manager.md` agent is Claude Code-only; in Codex, use the `yandex-tracker` skill and MCP tools directly.
+Start a new Codex thread after installation so the plugin skill and MCP tools are loaded.
 
 Claude Code uses the shared `.mcp.json` with `${...}` placeholders. Codex uses
 `.codex.mcp.json` through `.codex-plugin/plugin.json`, with `env_vars` so the

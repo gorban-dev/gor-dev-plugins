@@ -45,8 +45,6 @@
 
 ## Notes
 
-- The `agents/tracker-manager.md` agent is Claude Code-only. On OpenCode use `@mention` subagents or drive MCP calls directly.
-
 ## Updating
 
 ```bash
