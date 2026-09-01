@@ -22363,7 +22363,7 @@ var client = new TrackerClient({
 });
 var server = new McpServer({
   name: "yandex-tracker-mcp-server",
-  version: "2.0.0"
+  version: "2.0.1"
 });
 registerIssueTools(server, client);
 registerCommentTools(server, client);

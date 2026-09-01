@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.1.1 — Fix MCP server config in Claude Code
+
+`yandex-tracker` 2.0.0 → 2.0.1.
+
+### Fixed
+
+`.mcp.json` no longer declares an `env` block. It listed all four credential variables as `${...}` placeholders, and Claude Code refuses to start a server whose config references an unset variable:
+
+```
+Invalid MCP server config for "yandex-tracker":
+Missing environment variables: YANDEX_TRACKER_ORG_ID, YANDEX_TRACKER_IAM_TOKEN
+```
+
+The block could never be satisfied. The two auth modes are mutually exclusive — OAuth gives you `YANDEX_TRACKER_TOKEN` + `YANDEX_TRACKER_ORG_ID`, Yandex Cloud gives you `YANDEX_TRACKER_IAM_TOKEN` + `YANDEX_TRACKER_CLOUD_ORG_ID` — so no one has all four, and every install hit the error.
+
+The block arrived in 1.0.1 while adding Codex support and stayed behind when 1.0.2 moved Codex to its own `.codex.mcp.json`. Claude Code now uses the pre-1.0.1 form again: `${CLAUDE_PLUGIN_ROOT}/dist/bundle.js` and no `env`, so the server inherits the environment Claude Code was launched with. Codex keeps `.codex.mcp.json` with `env_vars`.
+
 ## v3.1.0 — Attachment download, tracker-manager agent removed
 
 `yandex-tracker` 1.0.2 → 2.0.0.

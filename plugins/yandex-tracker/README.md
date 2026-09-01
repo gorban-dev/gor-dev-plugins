@@ -174,10 +174,10 @@ The bundled MCP server (`dist/bundle.js`) is committed, so no `npm install` or l
 
 Start a new Codex thread after installation so the plugin skill and MCP tools are loaded.
 
-Claude Code uses the shared `.mcp.json` with `${...}` placeholders. Codex uses
-`.codex.mcp.json` through `.codex-plugin/plugin.json`, with `env_vars` so the
-real credential values are inherited by name instead of passing placeholders
-literally.
+Claude Code uses the shared `.mcp.json`, which declares no `env` block — the server
+inherits the environment Claude Code was launched with. Codex uses `.codex.mcp.json`
+through `.codex-plugin/plugin.json`, with `env_vars` so the real credential values are
+inherited by name.
 
 ## License
 
